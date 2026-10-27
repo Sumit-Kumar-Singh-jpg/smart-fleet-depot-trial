@@ -1,2 +1,463 @@
-<!doctype html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#146e54"><title>Bus entry · Smart Fleet</title><link rel="stylesheet" href="src/css/worker.css"><script defer src="src/data/app_data.js"></script><script defer src="src/js/database.js"></script><script defer src="src/js/plate-scanner.js"></script><script defer src="src/js/worker.js"></script><link rel="stylesheet" href="src/css/mobile.css"><script defer src="src/js/i18n.js"></script><script defer src="src/js/remote.js"></script></head><body data-role="entry"><main><h1>Bus entry</h1><p>Loading buses…</p><noscript>Enable JavaScript to use this app.</noscript></main></body></html>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Fleet OS - Entry Recorder</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Local app data & database scripts -->
+    <script src="src/data/app_data.js"></script>
+    <script src="src/js/database.js"></script>
+    <style>
+        :root {
+            --bg-base: #F7F5F0;
+            --bg-surface: #FFFFFF;
+            --bg-card: #FFFFFF;
+            --bg-card-subtle: #F8F6F2;
+            --border-subtle: #0093A5;
+            --border-card: rgba(30, 147, 165, 0.1);
+            --text-bright: #34454C;
+            --text-primary: #34454C;
+            --text-secondary: #7B8688;
+            --text-muted: #7B8688;
+            --brand-primary: #D96629;
+            --status-safe: #059669;
+            --status-error: #DC2626;
+            --font-sans: "Inter", sans-serif;
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+
+            --tag-cat-a-bg: #E3F2FD;
+            --tag-cat-a-fg: #1976D2;
+            --tag-cat-b-bg: #E8F5E9;
+            --tag-cat-b-fg: #388E3C;
+            --tag-cat-c-bg: #FFFDE7;
+            --tag-cat-c-fg: #F9A825;
+        }
+
+        body.dark-mode {
+            --bg-base: #111314;
+            --bg-surface: #1E272B;
+            --bg-card: #1E272B;
+            --bg-card-subtle: #263238;
+            --border-subtle: #2DB7C9;
+            --border-card: rgba(45, 183, 201, 0.2);
+            --text-bright: #F0F2F2;
+            --text-primary: #F0F2F2;
+            --text-secondary: #A2B0AD;
+            --text-muted: #A2B0AD;
+            --brand-primary: #E57338;
+            --status-safe: #81C784;
+            --status-error: #E57373;
+
+            --tag-cat-a-bg: rgba(25, 118, 210, 0.2);
+            --tag-cat-a-fg: #90CAF9;
+            --tag-cat-b-bg: rgba(56, 142, 60, 0.2);
+            --tag-cat-b-fg: #A5D6A7;
+            --tag-cat-c-bg: rgba(249, 168, 37, 0.2);
+            --tag-cat-c-fg: #FFE082;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--bg-base);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 650px;
+            padding: 2rem 1.5rem;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.35rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            background: var(--tag-cat-a-bg);
+            color: var(--tag-cat-a-fg);
+        }
+
+        body.dark-mode .badge {
+            background: rgba(25, 118, 210, 0.2);
+            color: #90CAF9;
+        }
+
+        .theme-toggle {
+            background-color: var(--bg-card-subtle);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-subtle);
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            border-radius: 4px;
+            font-weight: 500;
+            width: auto;
+        }
+
+        .card {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-card);
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: var(--shadow-md);
+            margin-bottom: 1.5rem;
+        }
+
+        h1 {
+            color: var(--text-bright);
+            margin: 0 0 0.5rem 0;
+            font-size: 1.75rem;
+            letter-spacing: -0.02em;
+        }
+
+        p.subtitle {
+            color: var(--text-secondary);
+            margin: 0 0 1.5rem 0;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--text-bright);
+            font-size: 0.95rem;
+        }
+
+        input[type="text"],
+        select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-subtle);
+            background-color: var(--bg-base);
+            color: var(--text-primary);
+            border-radius: 6px;
+            font-family: var(--font-sans);
+            font-size: 1rem;
+            box-sizing: border-box;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input[type="text"]:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--brand-primary);
+            box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.15);
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1.25rem;
+            display: none;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        .alert.success {
+            background-color: rgba(5, 150, 105, 0.1);
+            color: var(--status-safe);
+            border: 1px solid var(--status-safe);
+            display: block;
+        }
+
+        .alert.error {
+            background-color: rgba(220, 38, 38, 0.1);
+            color: var(--status-error);
+            border: 1px solid var(--status-error);
+            display: block;
+        }
+
+        .status-pill {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1rem;
+            background: var(--bg-card-subtle);
+            border: 1px solid var(--border-subtle);
+            border-radius: 6px;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .status-pill strong {
+            color: var(--status-safe);
+        }
+
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+        }
+
+        button {
+            background-color: var(--brand-primary);
+            color: #FFFFFF;
+            border: none;
+            padding: 0.85rem 1.5rem;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.1s;
+            width: 100%;
+        }
+
+        body.dark-mode button {
+            color: #0F172A;
+        }
+
+        button:hover {
+            opacity: 0.92;
+        }
+
+        button:active {
+            transform: scale(0.99);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .login-btn {
+            background-color: #64748B;
+            color: #FFFFFF !important;
+        }
+
+        body.dark-mode .login-btn {
+            background-color: var(--bg-card-subtle);
+            color: var(--text-primary) !important;
+            border: 1px solid var(--border-subtle);
+        }
+
+        .info-card {
+            background-color: var(--bg-card-subtle);
+            border: 1px solid var(--border-subtle);
+            border-radius: 6px;
+            padding: 0.85rem 1rem;
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+    </style>
+<script defer src="src/js/i18n.js"></script><script defer src="src/js/remote.js"></script><script defer src="src/js/legacy-ui.js"></script></head>
+
+<body data-ui="legacy" data-role="entry">
+
+    <div class="container">
+        <div class="header-top">
+            <span class="badge">Database 1: Entry Recorder</span>
+            <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn">☀️ Light</button>
+        </div>
+
+        <div class="card">
+            <h1>Depot Intake & Entry Recorder</h1>
+            <p class="subtitle">
+                Chandapura Depot 44. All 122 buses are recorded in this database. Select a bus and submit approval to
+                shift it into the Cleaner and Charging databases.
+            </p>
+
+            <!-- Dynamic Success / Error Alert Message -->
+            <div id="statusAlert" class="alert" role="status" aria-live="polite"></div>
+
+            <!-- 1. Search Bar for Easy Access directly above dropdown -->
+            <div class="form-group">
+                <label for="bus-search">Search Bus</label>
+                <input type="text" id="bus-search"
+                    placeholder="Type bus ID or registration (e.g., BM221, KA51AH8184)..."
+                    oninput="filterBusDropdown()">
+            </div>
+
+            <!-- 2. Dropdown to select the bus -->
+            <div class="form-group">
+                <label for="bus-select">Select Bus to Approve (<span id="pending-count">0</span> available)</label>
+                <select id="bus-select" onchange="onBusSelected()">
+                    <option value="">-- Choose Bus to Approve --</option>
+                </select>
+            </div>
+
+            <!-- 3. Approval Confirmation Indicator -->
+            <div class="status-pill">
+                <span>Action on Submit:</span>
+                <strong>✓ Approve Entry & Forward to Cleaner + Charging</strong>
+            </div>
+
+            <!-- 4. Submit and Logout Buttons at the bottom -->
+            <div class="btn-group">
+                <button id="submit-btn" onclick="submitApproval()" disabled>Submit</button>
+                <button class="login-btn" onclick="goToLogin()">Logout</button>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const ACTIVE_DEPOT_ID=new URLSearchParams(location.search).get('depotId')||'chandapura';
+        function activeDepotName(){try{const state=JSON.parse(localStorage.getItem('sfos_multi_v2')||'null'),depot=(state?.depots||[]).find(item=>item.id===ACTIVE_DEPOT_ID);if(depot?.name)return depot.name;}catch(e){}return ACTIVE_DEPOT_ID==='chandapura'?'Chandapura Depot 44':ACTIVE_DEPOT_ID.replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase())+' Depot';}
+        function showActiveDepotDescription(text){const subtitle=document.querySelector('.subtitle');if(subtitle)subtitle.textContent=text;}
+
+        // --- THEME MANAGEMENT ---
+        function toggleTheme() {
+            const body = document.body;
+            const btn = document.getElementById('theme-btn');
+            if (body.classList.contains('dark-mode')) {
+                body.classList.remove('dark-mode');
+                btn.innerText = '☀️ Light';
+                localStorage.setItem('fleet_theme', 'light');
+            } else {
+                body.classList.add('dark-mode');
+                btn.innerText = '🌙 Dark';
+                localStorage.setItem('fleet_theme', 'dark');
+            }
+        }
+        if (localStorage.getItem('fleet_theme') === 'dark') {
+            document.body.classList.add('dark-mode');
+            const btn = document.getElementById('theme-btn');
+            if (btn) btn.innerText = '🌙 Dark';
+        }
+
+        // --- POPULATE & FILTER BUS DROPDOWN ---
+        let pendingBuses = [];
+
+        function loadPendingBuses() {
+            if (!window.FleetDB || !window.FleetDB.EntryRecorder) {
+                console.error('FleetDB not ready');
+                return;
+            }
+            pendingBuses = window.FleetDB.EntryRecorder.getPending(ACTIVE_DEPOT_ID);
+            showActiveDepotDescription(`${activeDepotName()}. Select a linked bus or receive an incoming transfer to record entry.`);
+            document.getElementById('pending-count').innerText = pendingBuses.length;
+            renderDropdown(pendingBuses);
+        }
+
+        function renderDropdown(buses) {
+            const select = document.getElementById('bus-select');
+            const currentVal = select.value;
+            select.innerHTML = '';
+
+            const defaultOpt = document.createElement('option');
+            defaultOpt.value = '';
+            defaultOpt.textContent = buses.length > 0
+                ? `-- Choose Bus (${buses.length} pending) --`
+                : '-- Bus not available in current queue --';
+            select.appendChild(defaultOpt);
+
+            buses.forEach(b => {
+                const opt = document.createElement('option');
+                opt.value = b.busId;
+                opt.textContent = `${b.busId} | ${b.regNo} | Cat ${b.cat} (${b.actualRange} km)`;
+                select.appendChild(opt);
+            });
+
+            // Re-select if still valid
+            if (currentVal && buses.some(b => b.busId === currentVal)) {
+                select.value = currentVal;
+                document.getElementById('submit-btn').disabled = false;
+            } else {
+                select.value = '';
+                document.getElementById('submit-btn').disabled = true;
+            }
+        }
+
+        function filterBusDropdown() {
+            const query = document.getElementById('bus-search').value.trim().toLowerCase();
+            if (!query) {
+                renderDropdown(pendingBuses);
+                return;
+            }
+            const filtered = pendingBuses.filter(b =>
+                b.busId.toLowerCase().includes(query) ||
+                b.regNo.toLowerCase().includes(query)
+            );
+            renderDropdown(filtered);
+        }
+
+        function onBusSelected() {
+            const select = document.getElementById('bus-select');
+            const submitBtn = document.getElementById('submit-btn');
+            submitBtn.disabled = !select.value;
+        }
+
+        // --- SUBMIT APPROVAL ---
+        function submitApproval() {
+            const select = document.getElementById('bus-select');
+            const busId = select.value;
+            if (!busId) {
+                showAlert('Please select a bus first.', 'error');
+                return;
+            }
+
+            try {
+                // 1. Approve bus in EntryRecorderDB (this shifts bus to CleanerDB and ChargingDB)
+                const approvedRecord = window.FleetDB.EntryRecorder.approveBus(busId, 'Entry Recorder Officer', ACTIVE_DEPOT_ID);
+
+                // 2. Display success message
+                showAlert(`✓ Bus ${approvedRecord.busId} (${approvedRecord.regNo}) is selected and approved! Forwarded to Cleaner and Charging Incharge.`, 'success');
+
+                // 3. Remove selected option from dropdown display
+                document.getElementById('bus-search').value = '';
+                loadPendingBuses();
+
+            } catch (e) {
+                showAlert('Error recording approval: ' + e.message, 'error');
+            }
+        }
+
+        function showAlert(message, type) {
+            const alertBox = document.getElementById('statusAlert');
+            alertBox.className = 'alert ' + type;
+            alertBox.textContent = message;
+            alertBox.style.display = 'block';
+        }
+
+        function goToLogin() {
+            window.location.href = 'index.html';
+        }
+
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            loadPendingBuses();
+        });
+
+        // Listen to reactive updates across tabs/windows
+        window.addEventListener('fleet-db-updated', () => {
+            loadPendingBuses();
+        });
+
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'smart_fleet_db_entry_recorder' || e.key === 'sfos_multi_v2') {
+                loadPendingBuses();
+            }
+        });
+    </script>
+
+</body>
+
+</html>

@@ -151,6 +151,8 @@
     if (event.key === 'fleet_theme') document.body.classList.toggle('dark-mode', event.newValue === 'dark');
   });
   window.addEventListener('fleet-db-updated', () => { if (!busy) refresh(); });
-  window.addEventListener('focus', refresh);
+  // In the restored console iframe, focus can arrive during the first tap.
+  // Replacing controls at that moment drops the tap; polling handles frame updates.
+  if (parent === window) window.addEventListener('focus', refresh);
   try { start(); } catch (_) { notice('Could not load this screen. Reload the page to try again.', true); }
 })();

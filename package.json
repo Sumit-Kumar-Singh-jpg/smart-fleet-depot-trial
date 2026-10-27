@@ -1,13 +1,13 @@
 {
   "name": "smart-fleet-os",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Smart Depot Dispatch & Fleet Routing OS for Electric Bus Fleets",
   "main": "index.html",
   "scripts": {
     "test": "node test_cross_depot_sync.js && node test_auto_assignment.js",
     "test:sync": "node test_cross_depot_sync.js",
     "test:assignment": "node test_auto_assignment.js",
-    "test:ui": "node test_role_ui.js",
+    "test:ui": "node test_legacy_ui.js",
     "build": "node scripts/build-web.js",
     "android:build": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-android.ps1",
     "server": "node server/server.js",

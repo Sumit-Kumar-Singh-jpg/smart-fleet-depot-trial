@@ -36,14 +36,14 @@ async function wait(client,expression){for(let i=0;i<60;i++){if(await client.eva
    }
    const account=accounts.find(a=>a.role===role);
    await client.evaluate(`document.getElementById('user').value=${JSON.stringify(account.username)};document.getElementById('pass').value=${JSON.stringify(account.password)};setTimeout(()=>document.getElementById('loginForm').dispatchEvent(new Event('submit',{cancelable:true})),50);true;`);
-   await wait(client,"!location.pathname.endsWith('index.html')");
-   await wait(client,"Boolean(window.FleetRemote?.ready)");
+   await wait(client,"Boolean(document.querySelector('iframe')?.contentDocument?.querySelector('h1'))");
+   await wait(client,"Boolean(document.querySelector('iframe')?.contentWindow?.FleetRemote?.ready)");
    await client.evaluate("FleetI18n.setLanguage('kn')");await pause(200);
-   const title=await client.evaluate("document.querySelector('h1')?.textContent");if(!title||/^(Bus entry|Cleaning|Charging|Depot manager)$/.test(title))throw new Error('Kannada title missing');
+   const title=await client.evaluate("document.querySelector('iframe')?.contentDocument?.querySelector('h1')?.textContent");if(!title||/^(Bus entry|Cleaning|Charging|Depot manager)$/.test(title))throw new Error('Kannada title missing');
    if(!await client.evaluate('document.documentElement.scrollWidth<=innerWidth'))throw new Error('Android horizontal overflow');
    console.log('PASS Android '+role+' login, server connection, Kannada, and viewport');
    if(role==='entry'){
-    await client.evaluate("FleetI18n.setLanguage('hi')");if(await client.evaluate("document.querySelector('h1').textContent")!=='बस प्रवेश')throw new Error('Hindi title missing');
+    await client.evaluate("FleetI18n.setLanguage('hi')");if(await client.evaluate("document.querySelector('iframe').contentDocument.querySelector('h1').textContent")!=='डिपो बस प्रवेश')throw new Error('Hindi title missing');
     await client.evaluate("FleetI18n.setLanguage('kn')");await pause(200);
     fs.writeFileSync('apk/android-entry-preview.png',execFileSync(adb,['-s',serial,'exec-out','screencap','-p']));
    }

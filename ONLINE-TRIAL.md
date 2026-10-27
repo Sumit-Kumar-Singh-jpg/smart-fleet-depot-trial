@@ -36,3 +36,5 @@ The new online APKs are debug-signed pilot builds. The native Android wrapper wa
 The service can sleep when unused. The first sign-in after inactivity may take about a minute; the apps show a server-starting message and wait before submitting credentials. Free usage quotas still apply and can pause service. No keep-alive bot has been configured.
 
 This is a trial using the bundled sample fleet. Keep real operational data separate until the depot configuration, source-data migration and physical-phone checks have been completed. Automatic Render deployments are disabled; future code changes require a deliberate deployment.
+
+Version 1.1.1 restores the original form and dropdown UI. The existing online server, staff accounts, stored records and three supported languages are retained. Install the refreshed APKs to get this layout on Android.

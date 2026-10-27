@@ -2,7 +2,7 @@ plugins { id 'com.android.application' }
 android {
     namespace 'in.smartfleet.depot'
     compileSdk 36
-    defaultConfig { applicationId 'in.smartfleet.depot'; minSdk 26; targetSdk 36; versionCode 2; versionName '1.1.0'; buildConfigField 'String', 'SERVER_URL', '"https://smart-fleet-depot-trial.onrender.com"' }
+    defaultConfig { applicationId 'in.smartfleet.depot'; minSdk 26; targetSdk 36; versionCode 3; versionName '1.1.1'; buildConfigField 'String', 'SERVER_URL', '"https://smart-fleet-depot-trial.onrender.com"' }
     buildFeatures { buildConfig true }
     compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
     flavorDimensions += 'work'

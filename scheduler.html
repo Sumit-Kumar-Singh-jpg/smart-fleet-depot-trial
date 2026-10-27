@@ -300,13 +300,13 @@
             opacity: 0.5;
         }
     </style>
-<style>*,*::before,*::after{box-sizing:border-box}button,select{min-height:52px}body{font-size:17px}.container{max-width:900px}.card{padding:24px}#scheduler-depot-label{font-size:20px;font-weight:700}@media(max-width:540px){.container{padding:12px}.card{padding:16px}#scheduler-view>div[style*="display: flex"]{flex-direction:column}h1{font-size:28px}}</style><link rel="stylesheet" href="src/css/mobile.css"><script defer src="src/js/i18n.js"></script><script defer src="src/js/remote.js"></script></head>
+<script defer src="src/js/i18n.js"></script><script defer src="src/js/remote.js"></script><script defer src="src/js/legacy-ui.js"></script></head>
 
-<body>
+<body data-ui="legacy">
 
     <div class="container">
         <div class="header-top">
-            <span class="badge">Scheduler</span>
+            <span class="badge">Database 4: Scheduler</span>
             <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn">☀️ Light</button>
         </div>
 
@@ -326,10 +326,10 @@
                 <p><strong>Available Buses in Ready Pool:</strong> <span id="pool-count" class="tag">0</span></p>
             </div>
 
-            <div id="scheduler-alert" class="alert" role="status" aria-live="polite" tabindex="-1"></div>
+            <div id="scheduler-alert" class="alert"></div>
 
             <div class="form-group">
-                <label for="scheduler-route-select">1. Choose trip</label>
+                <label for="scheduler-route-select">Select Route / Schedule (Primary Input)</label>
                 <select id="scheduler-route-select" onchange="onScheduleSelected()"></select>
             </div>
 
@@ -340,17 +340,17 @@
             </div>
 
             <div class="form-group">
-                <label for="scheduler-bus-select">2. Choose bus</label>
+                <label for="scheduler-bus-select">Choose Bus from the Top 3 Route Recommendations</label>
                 <select id="scheduler-bus-select" onchange="onManualResourceChanged()"></select>
             </div>
 
             <div class="form-group">
-                <label for="scheduler-driver-select">3. Choose driver</label>
+                <label for="scheduler-driver-select">Recommended Driver (Eligible for This Route)</label>
                 <select id="scheduler-driver-select" onchange="onManualResourceChanged()"></select>
             </div>
 
             <div style="display: flex; gap: 0.75rem; margin-top: 1rem;">
-                <button id="final-assign-btn" onclick="finalizeAssignment()" style="flex:1;" disabled>Assign bus and driver</button>
+                <button id="final-assign-btn" onclick="finalizeAssignment()" style="flex:1;" disabled>Confirm & Save Assignment</button>
                 <button class="logout-btn" onclick="schedulerLogout()" style="width: auto;">Logout</button>
             </div>
 

@@ -20,3 +20,9 @@ Six refreshed APKs build successfully with server warm-up and 15-second revision
 The live Render HTTPS service passed 19 API checks, including all six role logins and a complete sample bus cycle with a manager-reviewed problem hold. The returned bus is available for the next trial cycle. APKs are rebuilt with the public trial URL preconfigured. Render and Neon are both on their Free plans; quotas and cold starts still apply.
 
 The second Render deploy (`dep-dbgb7m0m7kps73buk1tg`) reached live with database revision 7 preserved and all six account logins passing again. Six bundled-client browser checks also passed from the Android app origin against the live service, covering CORS, Kannada and viewport fit. These browser checks do not replace physical Android camera and voice testing.
+
+## Version 1.1.1 — original UI restored
+
+Restored the original login console, worker forms, bus dropdowns, colours and scheduler presentation from the pre-improvement backup. Cloud authentication, persistent records, Kannada/Hindi/English support and safe assignment/logout behaviour remain. Manager and connected admin functionality remain available in matching original colours.
+
+The restored UI passed 17 local integration checks, 7 startup/polling checks and 20 shared-server checks. All six Android variants rebuilt successfully. Earlier card-layout checks above describe older versions; they are superseded by the restored UI checks. These UI changes have browser validation; the rebuilt APKs still need a physical-device usability check.

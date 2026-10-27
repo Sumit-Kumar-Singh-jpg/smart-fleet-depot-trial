@@ -20,15 +20,15 @@ const accounts=[{...access.admin,role:'admin'},...access.staff];
    const page=await context.newPage();page.on('pageerror',error=>errors.push(error.message));
    await page.goto('https://appassets.androidplatform.net/assets/index.html?app='+account.role);
    await page.locator('#user').fill(account.username);await page.locator('#pass').fill(account.password);await page.locator('#loginForm button.primary').click();
-   await page.waitForURL(url=>!url.pathname.endsWith('/index.html'),{timeout:100000});await page.waitForFunction(()=>FleetRemote.ready,{timeout:30000});
+   await page.locator('iframe').waitFor({timeout:100000});const frame=await page.locator('iframe').elementHandle().then(el=>el.contentFrame());await frame.waitForFunction(()=>FleetRemote.ready,{timeout:30000});
    await page.locator('#fleet-language').selectOption('kn');
    if(!await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth))throw new Error(account.role+' viewport overflow');
    if(account.role==='entry'){
-    await page.locator('#bus-search').fill('273');await page.locator('[data-bus="BM273"]').click();
-    if(!await page.locator('#approve').isVisible())throw new Error('Entry action unavailable');
+    await frame.locator('#bus-search').fill('273');await frame.locator('#bus-select').selectOption('BM273');
+    if(!await frame.locator('#submit-btn').isVisible())throw new Error('Entry action unavailable');
     await page.screenshot({path:path.join(root,'apk/online-entry-kannada.png'),fullPage:false});
    }
-   if(account.role==='admin'&&!await page.locator('#users').innerText().then(text=>text.includes('chandapura-entry')))throw new Error('Admin users did not load');
+   if(account.role==='admin')await frame.waitForFunction(()=>document.querySelector('#users').textContent.includes('chandapura-entry'),{timeout:30000});
    console.log('PASS '+account.role+' live UI, app-origin CORS, Kannada and phone viewport');checks++;
    await page.evaluate(()=>FleetRemote.logout());await context.close();
   }

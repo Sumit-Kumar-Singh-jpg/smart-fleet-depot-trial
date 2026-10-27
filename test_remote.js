@@ -16,16 +16,18 @@ const fs=require('node:fs'),path=require('node:path'),os=require('node:os'),asse
   await page.locator('#loginForm button.primary').click();
   check(await page.locator('#loginForm button.primary').isDisabled(),'Repeated sign-in disabled while server is starting');
   check(loginCount===0,'Credentials are not submitted before server readiness');
-  check(await page.locator('#remote-status').innerText()==='Starting server…','Visible cold-start explanation');
-  release();await page.waitForURL('**/entry_recorder.html?depotId=chandapura');
-  await page.waitForFunction(()=>FleetRemote.ready);
+  check(await page.locator('#err').innerText()==='Starting server…','Visible cold-start explanation');
+  release();await page.locator('iframe').waitFor();
+  const frame=await page.locator('iframe').elementHandle().then(el=>el.contentFrame());
+  await frame.waitForFunction(()=>FleetRemote.ready);
   check(healthCount>=2&&loginCount===1,'Cold-start HTML response is retried; credentials submitted once');
-  await page.locator('#bus-search').fill('304');await page.locator('[data-bus="BM304"]').click();
-  await page.evaluate(()=>FleetRemote.refresh());
+  await frame.locator('#bus-search').fill('304');await frame.locator('#bus-select').selectOption('BM304');
+  await frame.evaluate(()=>FleetRemote.refresh());
   check(statePaths.some(p=>p.includes('?since=')),'Polling sends known revision to reduce database traffic');
-  check(await page.locator('[data-bus="BM304"]').getAttribute('aria-pressed')==='true','Unchanged poll preserves explicit bus selection');
+  check(await frame.locator('#bus-select').inputValue()==='BM304','Unchanged poll preserves explicit bus selection');
   await page.locator('#fleet-language').selectOption('kn');await page.waitForFunction(()=>document.documentElement.lang==='kn');
-  check(await page.locator('#remote-status').innerText()==='ಸಂಪರ್ಕಗೊಂಡಿದೆ','Connection state is translated into Kannada');
+  await frame.waitForFunction(()=>document.documentElement.lang==='kn');
+  check(await frame.locator('#submit-btn').innerText()==='ಸಲ್ಲಿಸಿ','Restored form is translated into Kannada');
   console.log(checks+' startup and polling checks passed.');
  }finally{release();await browser.close();await new Promise(r=>server.close(r));await server.storageClosed;const target=path.resolve(dir);assert.ok(target.startsWith(path.resolve(os.tmpdir())+path.sep)&&path.basename(target).startsWith('fleet-wake-'));fs.rmSync(target,{recursive:true,force:true});}
 })().catch(e=>{console.error(e.message);process.exitCode=1;});

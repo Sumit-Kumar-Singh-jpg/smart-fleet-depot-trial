@@ -54,10 +54,12 @@
     'Sign in again to continue':['ಮುಂದುವರಿಸಲು ಮತ್ತೆ ಪ್ರವೇಶಿಸಿ','जारी रखने के लिए फिर साइन इन करें'],'Failed to fetch':['ಸರ್ವರ್ ಸಂಪರ್ಕ ಸಿಗಲಿಲ್ಲ','सर्वर से संपर्क नहीं हुआ'],'This bus has already changed. Refresh and choose again.':['ಬಸ್ ಮಾಹಿತಿ ಬದಲಾಗಿದೆ. ಮತ್ತೆ ನೋಡಿ ಆಯ್ಕೆ ಮಾಡಿ.','बस की जानकारी बदली है। फिर देखकर चुनें।'],'Account saved. Previous sessions for this account have ended.':['ಖಾತೆ ಉಳಿಸಲಾಗಿದೆ. ಈ ಖಾತೆಯ ಹಿಂದಿನ ಪ್ರವೇಶಗಳು ಮುಗಿದಿವೆ.','खाता सेव हुआ। इस खाते के पुराने सत्र समाप्त हुए।'],
     'Save could not be confirmed. Refresh to check recent work.':['ಉಳಿಸಲಾಗಿದೆಯೇ ಎಂದು ದೃಢಪಡಿಸಲಾಗಲಿಲ್ಲ. ಇತ್ತೀಚಿನ ಕೆಲಸವನ್ನು ಮತ್ತೆ ನೋಡಿ.','सेव की पुष्टि नहीं हो सकी। हाल का काम फिर देखें।'],
     'Starting server…':['ಸರ್ವರ್ ಪ್ರಾರಂಭವಾಗುತ್ತಿದೆ…','सर्वर शुरू हो रहा है…'],'Server is not ready yet. Please try again.':['ಸರ್ವರ್ ಇನ್ನೂ ಸಿದ್ಧವಾಗಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.','सर्वर अभी तैयार नहीं है। फिर प्रयास करें।'],
+    'Submit':['ಸಲ್ಲಿಸಿ','जमा करें'],'Search Bus':['ಬಸ್ ಹುಡುಕಿ','बस खोजें'],'Depot Intake & Entry Recorder':['ಡಿಪೋ ಬಸ್ ಪ್ರವೇಶ','डिपो बस प्रवेश'],'Cleaning Bay Operations':['ಬಸ್ ಸ್ವಚ್ಛತೆ','बस सफाई'],'Charging Infrastructure Operations':['ಬಸ್ ಚಾರ್ಜಿಂಗ್','बस चार्जिंग'],
     'Close':['ಮುಚ್ಚಿ','बंद करें'],'Cancel':['ರದ್ದುಮಾಡಿ','रद्द करें'],'Save':['ಉಳಿಸಿ','सेव करें'],
     'Scan bus number plate':['ಬಸ್ ನಂಬರ್ ಪ್ಲೇಟ್ ಸ್ಕ್ಯಾನ್ ಮಾಡಿ','बस की नंबर प्लेट स्कैन करें'],'Capture & scan':['ಚಿತ್ರ ತೆಗೆದು ಸ್ಕ್ಯಾನ್ ಮಾಡಿ','फोटो लेकर स्कैन करें'],'Retry camera':['ಕ್ಯಾಮೆರಾ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ','कैमरा फिर खोलें'],'Use phone camera or choose photo':['ಫೋನ್ ಕ್ಯಾಮೆರಾ ಅಥವಾ ಫೋಟೋ ಬಳಸಿ','फोन कैमरा या फोटो चुनें'],'Detected text (edit if needed)':['ಪತ್ತೆಯಾದ ಪಠ್ಯ (ಬೇಕಾದರೆ ತಿದ್ದಿ)','पहचाना गया पाठ (ज़रूरत हो तो सुधारें)'],'Match plate to bus':['ಪ್ಲೇಟ್‌ನಿಂದ ಬಸ್ ಹುಡುಕಿ','प्लेट से बस खोजें']
   };
   const patterns = [
+    [/^✓ Bus (.+) approved and saved\.$/, ['✓ ಬಸ್ $1 ಅನುಮೋದಿಸಲಾಗಿದೆ ಮತ್ತು ಉಳಿಸಲಾಗಿದೆ.','✓ बस $1 की मंज़ूरी सेव हुई।']],
     [/^Not saved\. (.*)$/, ['ಉಳಿಸಲಾಗಿಲ್ಲ. $1','सेव नहीं हुआ। $1']],
     [/^✓ (Bus entered|Cleaning done|Charging done)$/, ['✓ $1','✓ $1']],
     [/^(\d+) waiting$/, ['$1 ಕಾಯುತ್ತಿವೆ','$1 बाकी']],
@@ -107,11 +109,15 @@
     observer?.observe(document.body,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['placeholder','aria-label','title']});
   }
   window.FleetI18n={t,get language(){return language;},get locale(){return {en:'en-IN',kn:'kn-IN',hi:'hi-IN'}[language];},setLanguage(value){if(!['en','kn','hi'].includes(value))return;language=value;localStorage.setItem('fleet_language',value);const select=document.getElementById('fleet-language');if(select)select.value=value;translate();window.dispatchEvent(new Event('fleet-language'));}};
+  window.addEventListener('storage',event=>{if(event.key==='fleet_language'&&['en','kn','hi'].includes(event.newValue)){language=event.newValue;translate();}});
   document.addEventListener('DOMContentLoaded',()=>{
-    document.body.classList.add('mobile-app');
+    const legacy=document.body.dataset.ui==='legacy';
+    if(!legacy)document.body.classList.add('mobile-app');
     const bar=document.createElement('div');bar.className='language-bar';
     bar.innerHTML='<label for="fleet-language">🌐</label><select id="fleet-language" aria-label="Language / ಭಾಷೆ / भाषा"><option value="en">English</option><option value="kn">ಕನ್ನಡ</option><option value="hi">हिन्दी</option></select>';
-    document.body.prepend(bar);bar.querySelector('select').value=language;bar.querySelector('select').onchange=e=>FleetI18n.setLanguage(e.target.value);
+    if(legacy){
+      if(self===top){const header=document.querySelector('.right,.header-top,.header-actions');if(header){const select=bar.querySelector('select');select.className=header.matches('.right')?'act':'theme-toggle';header.append(select);select.value=language;select.onchange=e=>FleetI18n.setLanguage(e.target.value);}}
+    }else{document.body.prepend(bar);bar.querySelector('select').value=language;bar.querySelector('select').onchange=e=>FleetI18n.setLanguage(e.target.value);}
     observer=new MutationObserver(translate);translate();
   });
 })();

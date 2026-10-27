@@ -13,7 +13,7 @@
     lastRevision=result.revision;
     ready=true;window.dispatchEvent(new CustomEvent('fleet-db-updated',{detail:{stage:'remote'}}));
   }
-  function status(message,offline=false){const label=document.getElementById('remote-status');if(label)label.textContent=message;document.querySelector('.connection-bar')?.classList.toggle('offline',offline);}
+  function status(message,offline=false){const label=document.getElementById('remote-status');if(label)label.textContent=message;else if(document.body.dataset.ui==='legacy'){const error=document.getElementById('err');if(error){error.textContent=message==='Connected'?'':message;error.style.color=offline?'var(--bad)':'var(--muted)';}}document.querySelector('.connection-bar')?.classList.toggle('offline',offline);}
   async function request(route,body){
     if(!server)throw new Error('Configure the depot server to sign in.');
     const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),15000);
@@ -46,9 +46,11 @@
   };
   document.addEventListener('DOMContentLoaded',()=>{
     if(!required&&!connected)return;
+    if(document.body.dataset.ui!=='legacy'){
     const bar=document.createElement('div');bar.className='connection-bar';bar.innerHTML='<span id="remote-status" role="status" aria-live="polite"></span><button id="server-settings" type="button" aria-label="Server settings">⚙</button>';
     const languageBar=document.querySelector('.language-bar');if(languageBar)languageBar.prepend(bar);else document.body.prepend(bar);
     document.getElementById('server-settings').onclick=()=>{if(native)native.configureServer();else{const value=prompt('Depot server HTTPS address',server);if(value!==null){try{const parsed=new URL(value);if(!['https:','http:'].includes(parsed.protocol)||parsed.username||parsed.password)throw new Error();sessionStorage.clear();localStorage.setItem('fleet_server',parsed.origin);location.href=FleetRemote.loginURL();}catch(_){status('Enter a valid server address',true);}}}};
+    }
     status(connected?'Connecting…':'Configure the depot server to sign in.',!connected);
     if(connected&&!token)warmup().catch(()=>{});
     if(connected&&token){FleetRemote.refresh();setInterval(()=>{if(!document.hidden&&!document.querySelector('dialog[open]'))FleetRemote.refresh();},15000);}
