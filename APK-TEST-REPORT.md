@@ -18,3 +18,5 @@ Six refreshed APKs build successfully with server warm-up and 15-second revision
 ## Online trial verification
 
 The live Render HTTPS service passed 19 API checks, including all six role logins and a complete sample bus cycle with a manager-reviewed problem hold. The returned bus is available for the next trial cycle. APKs are rebuilt with the public trial URL preconfigured. Render and Neon are both on their Free plans; quotas and cold starts still apply.
+
+The second Render deploy (`dep-dbgb7m0m7kps73buk1tg`) reached live with database revision 7 preserved and all six account logins passing again. Six bundled-client browser checks also passed from the Android app origin against the live service, covering CORS, Kannada and viewport fit. These browser checks do not replace physical Android camera and voice testing.

@@ -47,7 +47,7 @@ Health is available at `/api/health`. It is a lightweight process liveness check
 - `node test_connected_ui.js`: connected browser workflows.
 - `npm run test:remote`: cold-start and compact polling behavior.
 
-Embedded PostgreSQL tests do not confirm live Neon connectivity. After deployment, verify live HTTPS health, cloud sign-in, an entry/cleaning/charging cycle, and persisted state after a Render restart before distributing the online trial.
+Embedded PostgreSQL tests do not confirm live Neon connectivity. Live HTTPS health, cloud sign-in, a complete sample bus cycle, and persistence across a Render redeployment are now verified. See `ONLINE-TRIAL.md` for user setup and the remaining physical-phone checks.
 
 ## Local depot mode remains available
 
@@ -57,6 +57,6 @@ Without `DATABASE_URL`, local runs use the existing SQLite database. The cloud g
 
 The dedicated Neon Free project is `hidden-bird-12340871`, branch `trial`, database `smart_fleet`, in Singapore. A live TLS-verified PostgreSQL connection, admin login and all five staff-role logins have been verified across a server-process restart. Private access details are stored in the ignored local `server/data/cloud-trial-access.json`; they are not in this repository or the download bundles.
 
-The Free Render service is `srv-dbgb5c59el5s73ce9t3g` in Singapore. Its public URL is **https://smart-fleet-depot-trial.onrender.com**. All six role logins and a sample entry, problem review, cleaning, charging, assignment and return cycle have passed through this HTTPS endpoint. Resource identifiers and verification status are recorded in `cloud-trial.json` without credentials.
+The Free Render service is `srv-dbgb5c59el5s73ce9t3g` in Singapore. Its public URL is **https://smart-fleet-depot-trial.onrender.com**. All six role logins and a sample entry, problem review, cleaning, charging, assignment and return cycle have passed through this HTTPS endpoint. A second Render deployment is live and retained all accounts and fleet state at the same revision. All six bundled client role screens also passed live app-origin CORS, Kannada and phone viewport checks. Resource identifiers and verification status are recorded in `cloud-trial.json` without credentials.
 
 The refreshed APKs contain this online URL as the default server address. If an older installation already saved a depot-local address, change it with the gear button. Private trial logins are available only in `server/data/cloud-trial-access.json` on the owner's computer. They are excluded from GitHub, public routes and download bundles.

@@ -1,5 +1,5 @@
 {
-  "status": "live-verifying-redeploy-persistence",
+  "status": "live-verified",
   "source": {
     "repository": "https://github.com/Sumit-Kumar-Singh-jpg/smart-fleet-depot-trial",
     "branch": "codex/render-neon-trial"
@@ -20,13 +20,17 @@
     "name": "smart-fleet-depot-trial",
     "serviceId": "srv-dbgb5c59el5s73ce9t3g",
     "url": "https://smart-fleet-depot-trial.onrender.com",
-    "deployId": "dep-dbgb5ct9el5s73ce9v70"
+    "deployId": "dep-dbgb7m0m7kps73buk1tg",
+    "deployedCommit": "fe4095205fc8292c025f7d8759ea0fa04cdc8a53"
   },
   "privateAccessFile": "server/data/cloud-trial-access.json",
   "verification": {
     "httpsHealth": true,
     "roleLogins": 6,
     "sampleWorkflowChecks": 19,
-    "revisionBeforeRedeploy": 7
+    "revisionBeforeRedeploy": 7,
+    "bundledClientRoles": 6,
+    "revisionAfterRedeploy": 7,
+    "persistedAcrossRenderRedeploy": true
   }
 }
