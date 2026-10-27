@@ -33,6 +33,8 @@ Enter the deployed `https://...onrender.com` address in each Android app's gear/
 
 Visible apps poll every 15 seconds. Unchanged polls return only a revision marker. Hidden apps and open confirmation/report dialogs do not poll. This reduces requests and database bandwidth; it does not guarantee that every trial workload will stay within the providers' quotas.
 
+Render Free instance hours are shared across the workspace. My Workspace already contains another Free web service, so monitor the shared allowance before extended testing. An always-on bot can consume the free hours even when nobody is using the trial.
+
 No keep-alive bot is required. Active app use already generates traffic. A health check can confirm availability, but it does not preserve a local database or guarantee that a free service will stay running.
 
 Health is available at `/api/health`. It is a lightweight process liveness check, not a database backup or a periodic database probe. This avoids unnecessarily keeping Neon's database compute awake.

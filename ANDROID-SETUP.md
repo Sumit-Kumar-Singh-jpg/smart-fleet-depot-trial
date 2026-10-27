@@ -1,5 +1,7 @@
 # Smart Fleet Android pilot
 
+For the free online trial with persistent PostgreSQL storage, follow [CLOUD-TRIAL-SETUP.md](CLOUD-TRIAL-SETUP.md). The local SQLite mode below remains available.
+
 Six separate Android APKs are built in `apk/`: Entry, Cleaning, Charging, Scheduler, Manager and Admin. Each has a separate package ID, label and icon colour. The APKs contain the existing web application inside a native Android shell with bundled assets, camera permission handling, photo selection, back-button handling and native text-to-speech.
 
 The screens support English, Kannada and Hindi. Choose the language using the top selector. Bus numbers, registration numbers, route identifiers and staff names remain unchanged. Audio needs the corresponding Android text-to-speech voice installed. These translations still need a Kannada/Hindi speaker and actual depot workers to review the terminology before rollout.
@@ -7,7 +9,7 @@ The screens support English, Kannada and Hindi. Choose the language using the to
 ## What is included
 
 - Staff sign in to their own role. The server authenticates passwords and enforces role and depot permissions.
-- Entry, cleaning and charging approvals are committed on a shared SQLite-backed server. Other app sessions check for updates every five seconds while visible.
+- Entry, cleaning and charging approvals are committed on a shared SQLite-backed server. Other app sessions check for updates every 15 seconds while visible.
 - Both cleaning and charging must finish before assignment. Repeated approvals are rejected. Server transactions and request IDs protect commits and request retries.
 - Problem reports hold a bus until a manager reviews and resolves them. A manager can explicitly record an assigned bus returning to the depot. Signing out never resets buses.
 - The Admin APK lists accounts and creates or updates role/depot accounts. Password changes revoke existing sessions for that account.
