@@ -20,8 +20,8 @@
     "name": "smart-fleet-depot-trial",
     "serviceId": "srv-dbgb5c59el5s73ce9t3g",
     "url": "https://smart-fleet-depot-trial.onrender.com",
-    "deployId": "dep-dbgbk00m7kps73bvi410",
-    "deployedCommit": "4a675e80473a99fdf42e5d2edb45ec86f5005a55"
+    "deployId": "dep-dbgca6avcj2c73bpgdjg",
+    "deployedCommit": "d6c81de30e49377c0a9d1a2a516f5cda970a6dcc"
   },
   "privateAccessFile": "server/data/cloud-trial-access.json",
   "verification": {
@@ -32,8 +32,17 @@
     "bundledClientRoles": 6,
     "revisionAfterRedeploy": 7,
     "persistedAcrossRenderRedeploy": true,
-    "uiVersion": "1.1.1-original-ui",
-    "restoredUiIntegrationChecks": 17,
-    "restoredUiLiveVerified": true
+    "uiVersion": "1.2.0-single-app-repository-ui",
+    "restoredUiIntegrationChecks": 19,
+    "restoredUiLiveVerified": true,
+    "adminDashboardChecksPerStorage": 19,
+    "nativeUnifiedAppRoles": 6
+  },
+  "android": {
+    "applicationId": "in.smartfleet.depot",
+    "versionName": "1.2.0",
+    "versionCode": 4,
+    "apk": "apk/SmartFleet.apk",
+    "allRolesInOneApp": true
   }
 }

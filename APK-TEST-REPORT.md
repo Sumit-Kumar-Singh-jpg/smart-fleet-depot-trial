@@ -17,3 +17,5 @@ UI source: https://github.com/NIKHILNIDAGUNDI/SFR-os-1, commit 07aa7c398dcb38484
 The online password reset from the previous request is preserved. Trial data and accounts remain on the existing Neon database. Admin configuration commits check the current state revision and cannot overwrite a newer worker approval. Passwords and hashes are excluded from snapshots and distributable archives.
 
 Physical camera/OCR accuracy, installed language voices and worker usability need field checks on depot phones.
+
+Render deploy dep-dbgca6avcj2c73bpgdjg is live. Ten read-only live API checks passed, all six bundled app-origin screens passed, and all six deployed website role screens were checked. Revision 7 and the six existing account passwords were retained. The final APK signature and its bundled original UI assets were verified.
