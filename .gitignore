@@ -1,0 +1,52 @@
+# Operating System Metadata
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+[Dd]esktop.ini
+
+# Editor & IDE Files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+*~
+*.orig
+
+# Temporary & Cache Files
+*.tmp
+*.bak
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+New Text Document.txt
+
+# Node Dependencies
+node_modules/
+
+# Local Environment & Secrets
+.env
+.env.local
+.env.*.local
+
+# Local app builds and private server state
+dist/
+apk/
+android/.gradle/
+android/app/build/
+android/local.properties
+server/data/
+*.jks
+*.keystore
+android/build/
+
+SmartFleet-*.zip
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm

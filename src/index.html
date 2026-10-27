@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ashok Leyland • Switch Mobility | Smart Depot Dispatch & Fleet Routing OS</title>
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<!-- Local Styles -->
+<link rel="stylesheet" href="css/main.css" />
+</head>
+<body>
+
+<!-- Header Navigation -->
+<header class="top-navbar">
+  <div class="brand-group">
+    <div class="brand-logo-badge">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+        <rect x="2" y="5" width="20" height="12" rx="2"/>
+        <circle cx="7" cy="19" r="2"/>
+        <circle cx="17" cy="19" r="2"/>
+      </svg>
+      <span>ASHOK LEYLAND</span>
+    </div>
+    <div class="brand-text">
+      <h1>
+        SWITCH MOBILITY • SMART DEPOT OPERATING SYSTEM
+        <span class="depot-status-pill">
+          <span class="pulse-dot"></span>
+          DEPOT 44 CHANDAPURA LIVE
+        </span>
+      </h1>
+      <div class="depot-tag">122 Switch Electric Buses • <span id="depotScheduleCount">121</span> Dedicated EV Schedules • Multi-Actor Governance</div>
+    </div>
+  </div>
+
+  <div class="nav-controls">
+    <button class="btn-primary" onclick="solveAllSchedulesGlobal()" style="box-shadow:var(--shadow-xs);">
+      ⚡ 1-Click Auto-Schedule & Shed-Out
+    </button>
+    <div class="sim-clock" id="simClockDisplay">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+      </svg>
+      <span id="simTimeText">08:30:00 IST</span>
+    </div>
+    <button class="sim-speed-btn active" onclick="setSimSpeed(1, this)">1x</button>
+    <button class="sim-speed-btn" onclick="setSimSpeed(5, this)">5x</button>
+    <button class="sim-speed-btn" onclick="setSimSpeed(15, this)">15x</button>
+    <button class="sim-speed-btn" id="pauseBtn" onclick="toggleSimPause()">⏸</button>
+    <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()">?? Dark</button>
+  </div>
+</header>
+
+<!-- Sub Navigation Tabs -->
+<nav class="sub-nav" id="subNav">
+  <button class="nav-tab-btn active" onclick="switchTab('tab-radar', this)">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><line x1="12" y1="3" x2="12" y2="12"/><line x1="12" y1="12" x2="19" y2="15"/></svg>
+    Live Fleet Radar & Corridors
+    <span class="nav-tab-badge">28 Live</span>
+  </button>
+  <button class="nav-tab-btn" onclick="switchTab('tab-solver', this)">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07l14.14-14.14"/></svg>
+    Schedule Allocation & Readiness
+    <span class="nav-tab-badge" id="navScheduleCount">121 Sched</span>
+  </button>
+  <button class="nav-tab-btn" onclick="switchTab('tab-wash', this)">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+    Depot Turnaround & 20-Min Wash
+    <span class="nav-tab-badge">Wash Bay</span>
+  </button>
+  <button class="nav-tab-btn" onclick="switchTab('tab-chargers', this)">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="16" height="10" rx="2"/><line x1="22" y1="10" x2="22" y2="14"/><line x1="6" y1="12" x2="10" y2="12"/></svg>
+    Substation & 16-Bay Chargers
+    <span class="nav-tab-badge">2.8 MW</span>
+  </button>
+  <button class="nav-tab-btn" onclick="switchTab('tab-timeline', this)">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
+    24-Hour Dispatch Timeline
+    <span class="nav-tab-badge">Gantt</span>
+  </button>
+  <button class="nav-tab-btn" onclick="switchTab('tab-defects', this)">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+    Defect Intelligence & Governance
+    <span class="nav-tab-badge">Actors</span>
+  </button>
+  <button class="nav-tab-btn" onclick="switchTab('tab-fleet', this)">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="22" height="13" rx="2"/><path d="M5 21v-5"/><path d="M19 21v-5"/></svg>
+    Fleet Master & Battery Health
+    <span class="nav-tab-badge">122 Buses</span>
+  </button>
+  <button class="nav-tab-btn" onclick="switchTab('tab-drivers', this)">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    Driver Management & Roster
+    <span class="nav-tab-badge">NEW</span>
+  </button>
+  <button class="nav-tab-btn" onclick="switchTab('tab-assistant', this)">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    AI Operations Assistant
+    <span class="nav-tab-badge">Gemini</span>
+  </button>
+</nav>
+
+<!-- Main App Body -->
+<main class="app-content">
+
+  <!-- KPI Metrics Ribbon -->
+  <section class="kpi-strip">
+    <div class="kpi-card dark">
+      <div class="kpi-header">Active Depot Fleet</div>
+      <div class="kpi-value" id="kpiFleetActive">122 / 122</div>
+      <div class="kpi-subtext">Switch EiV 12 Electric (Depot 44)</div>
+    </div>
+    <div class="kpi-card gold">
+      <div class="kpi-header">Schedule Match & Readiness</div>
+      <div class="kpi-value" id="kpiMatchRate">98.5%</div>
+      <div class="kpi-subtext">Shed-Out Verified Match</div>
+    </div>
+    <div class="kpi-card blue">
+      <div class="kpi-header">Dedicated EV Schedules</div>
+      <div class="kpi-value" id="kpiCoverage">130 / 130</div>
+      <div class="kpi-subtext">All Shifts Solvent</div>
+    </div>
+    <div class="kpi-card amber">
+      <div class="kpi-header">20-Min Wash Throughput</div>
+      <div class="kpi-value" id="kpiWashCount">45 Clean / 9 Active</div>
+      <div class="kpi-subtext">Automated Gantry Bays</div>
+    </div>
+    <div class="kpi-card dark">
+      <div class="kpi-header">Substation Transformer Load</div>
+      <div class="kpi-value" id="kpiPower">1,840 kW</div>
+      <div class="kpi-subtext">Cap: 2,800 kW (ToU Optimized)</div>
+    </div>
+  </section>
+
+  <!-- TAB 1: LIVE FLEET RADAR & DISPATCH -->
+  <div id="tab-radar" class="tab-pane active">
+    <div class="radar-layout">
+      
+      <div class="map-container-wrap">
+        <div class="map-toolbar">
+          <div style="display:flex; gap:6px; flex-wrap:wrap;" id="routeChipsContainer">
+            <!-- Populated via JS -->
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button class="btn-secondary" onclick="fitDepotBounds()">Depot Center</button>
+            <button class="btn-secondary" onclick="fitAllRoutesBounds()">Full Network</button>
+          </div>
+        </div>
+        <div id="leafletMap"></div>
+      </div>
+
+      <!-- Live Bus Telemetry HUD -->
+      <aside class="radar-sidebar">
+        <div class="panel-header-bar" style="border-radius:12px 12px 0 0;">
+          <span style="font-weight:800; color:var(--text-bright);">Active Bus Telemetry HUD</span>
+          <span style="font-size:11px; font-weight:700; color:var(--brand-primary);">● 28 EN-ROUTE</span>
+        </div>
+        <div style="padding:14px; overflow-y:auto; flex:1;" id="radarSidebarContent">
+          <!-- Populated via JS -->
+        </div>
+      </aside>
+
+    </div>
+  </div>
+
+  <!-- TAB 2: SCHEDULE ALLOCATION & READINESS ENGINE -->
+  <div id="tab-solver" class="tab-pane">
+    <div class="panel-box" style="padding:16px 20px; background:var(--bg-card-subtle); border-left:4px solid var(--brand-primary); margin-bottom:16px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+        <div>
+          <h3 style="font-size:13.5px; font-weight:800; color:var(--text-bright);">Dedicated Bus to Dedicated Schedule Allocation</h3>
+          <p style="font-size:11.5px; color:var(--text-secondary); margin-top:2px;">
+            Schedules are automatically matched to compatible buses and drivers. Select a remaining route to assign an available shed-out-ready bus.
+          </p>
+        </div>
+        <div style="display:flex; gap:10px;">
+          <button class="btn-primary" onclick="solveAllSchedulesGlobal()">⚡ 1-Click Auto-Schedule All</button>
+          <button class="btn-secondary" onclick="exportDispatchCSV()">?? Export Dispatch Manifest</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Category Health Buckets -->
+    <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:12px; margin-bottom:16px;">
+      <div class="panel-box" style="margin:0; border-top:3px solid #C5A059; padding:14px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-weight:800; font-size:11.5px; color:var(--text-bright);">CATEGORY A (HIGH RANGE)</span>
+          <span class="cat-badge cat-a" id="catACount">52 Buses</span>
+        </div>
+        <div style="font-size:18px; font-weight:800; font-family:var(--font-mono); margin:6px 0; color:var(--text-bright);">120 - 136.3 km</div>
+        <div style="font-size:11px; color:var(--text-secondary);">Complex Trunk Corridors (SW-328, SW-360) & Long Night Halt</div>
+      </div>
+      <div class="panel-box" style="margin:0; border-top:3px solid #C5DFF8; padding:14px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-weight:800; font-size:11.5px; color:var(--text-bright);">CATEGORY B (STANDARD)</span>
+          <span class="cat-badge cat-b" id="catBCount">48 Buses</span>
+        </div>
+        <div style="font-size:18px; font-weight:800; font-family:var(--font-mono); margin:6px 0; color:var(--text-bright);">100 - 119.9 km</div>
+        <div style="font-size:11px; color:var(--text-secondary);">Radial Express Corridors (SW-600, SW-300, SW-361)</div>
+      </div>
+      <div class="panel-box" style="margin:0; border-top:3px solid #F3D55B; padding:14px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-weight:800; font-size:11.5px; color:var(--text-bright);">CATEGORY C (FEEDER SPUR)</span>
+          <span class="cat-badge cat-c" id="catCCount">22 Buses</span>
+        </div>
+        <div style="font-size:18px; font-weight:800; font-family:var(--font-mono); margin:6px 0; color:var(--text-bright);">62.0 - 99.9 km</div>
+        <div style="font-size:11px; color:var(--text-secondary);">Locked to Local Tech Feeders (SW-356, SW-399)</div>
+      </div>
+    </div>
+
+    <!-- Master Dedicated Schedule Table -->
+    <div class="panel-box">
+      <div class="panel-header-bar">
+        <div class="panel-title-area">
+          <h2>Dedicated Schedule Allocation Table</h2>
+          <p><span id="scheduleTableCount">121</span> Switch Concession Schedules with Interactive Dedicated Bus Allocation</p>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+          <label for="scheduleRouteSelect" style="font-size:11px; font-weight:700; color:var(--text-secondary);">Select Route / Schedule</label>
+          <select class="custom-select" id="scheduleRouteSelect" onchange="autoAssignSelectedSchedule(this.value)" aria-describedby="scheduleAutoAssignStatus">
+            <option value="">Choose a route to assign a bus and driver</option>
+          </select>
+          <select class="custom-select" id="shiftFilter" onchange="renderScheduleTable()">
+            <option value="ALL">All Shifts</option>
+            <option value="Night Halt">Night Halt (71)</option>
+            <option value="General shift">General Shift (39)</option>
+            <option value="Shift A">Shift A (1)</option>
+            <option value="Shift B">Shift B (19)</option>
+          </select>
+          <select class="custom-select" id="readinessFilter" onchange="renderScheduleTable()">
+            <option value="ALL">All Readiness States</option>
+            <option value="READY">Ready for Shed-Out Only</option>
+            <option value="WASH">In Wash / Charging</option>
+          </select>
+          <input type="text" class="custom-input" id="schedSearch" placeholder="Search Sch / Bus..." onkeyup="renderScheduleTable()" />
+        </div>
+      </div>
+      <p id="scheduleAutoAssignStatus" role="status" aria-live="polite" style="min-height:18px; margin:0 0 10px; font-size:11.5px; color:var(--text-secondary);"></p>
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Schedule ID</th>
+              <th>Corridor</th>
+              <th>Shift Type</th>
+              <th>Timings</th>
+              <th>Daily KM</th>
+              <th>Req (Single Chg)</th>
+              <th>Diff</th>
+              <th>Dedicated Bus (Dropdown Allocation)</th>
+              <th>Readiness Status</th>
+              <th>Tested Range</th>
+              <th>Reserve Buffer</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="scheduleTableBody">
+            <!-- Populated via JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 3: DEPOT TURNAROUND & 20-MIN WASH BAY -->
+  <div id="tab-wash" class="tab-pane">
+    
+    <!-- 4-Stage Visual Lifecycle Ribbon -->
+    <div class="wash-pipeline-strip">
+      <div class="pipeline-step-card">
+        <div class="step-num">Stage 1</div>
+        <div class="step-title">⚡ Fast Charging (CCS-2)</div>
+        <div class="step-count" id="countCharging">16 Buses</div>
+        <div style="font-size:10.5px; color:var(--text-secondary); margin-top:4px;">1 Input to trigger wash entry</div>
+      </div>
+      <div class="pipeline-step-card active" style="border-color:var(--brand-primary);">
+        <div class="step-num">Stage 2 (Current)</div>
+        <div class="step-title">?? 20-Min Wash Bay</div>
+        <div class="step-count" id="countWashing">9 Active</div>
+        <div style="font-size:10.5px; color:var(--text-secondary); margin-top:4px;">Gantry jet cleaning countdown</div>
+      </div>
+      <div class="pipeline-step-card">
+        <div class="step-num">Stage 3</div>
+        <div class="step-title">?? Pre-Departure Inspection</div>
+        <div class="step-count" id="countPreCheck">7 Inspected</div>
+        <div style="font-size:10.5px; color:var(--text-secondary); margin-top:4px;">Inspector check & sign-off</div>
+      </div>
+      <div class="pipeline-step-card">
+        <div class="step-num">Stage 4</div>
+        <div class="step-title">?? Shed-Out Ready</div>
+        <div class="step-count" id="countShedOut">45 Ready</div>
+        <div style="font-size:10.5px; color:var(--text-secondary); margin-top:4px;">Available for schedule dispatch</div>
+      </div>
+    </div>
+
+    <!-- Wash Bay Control Center -->
+    <div style="display:grid; grid-template-columns: 360px 1fr; gap:16px;">
+      
+      <!-- Scan Vehicle / Manual Entry Card -->
+      <div class="panel-box" style="padding:16px;">
+        <h3 style="font-size:13.5px; font-weight:800; color:var(--text-bright); margin-bottom:4px;">Vehicle Wash Entry</h3>
+        <p style="font-size:11px; color:var(--text-secondary); margin-bottom:14px;">Trigger automated 20-minute gantry wash after charge completion.</p>
+        
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <div>
+            <label style="font-size:11px; font-weight:700; color:var(--text-secondary);">Depot Number & Name</label>
+            <select id="washEntryDepot" class="custom-select" style="width:100%; margin-top:4px;">
+              <option value="Depot 44 (Chandapura)">Depot 44 (Chandapura Master Depot)</option>
+              <option value="Depot 28 (Electronic City)">Depot 28 (Electronic City Hub)</option>
+              <option value="Depot 18 (Silk Board)">Depot 18 (Silk Board Interchange)</option>
+              <option value="Depot 12 (Attibele)">Depot 12 (Attibele Border Facility)</option>
+            </select>
+          </div>
+
+          <div>
+            <label style="font-size:11px; font-weight:700; color:var(--text-secondary);">Scan Vehicle / Manual Bus No. Entry</label>
+            <input type="text" id="washEntryBusNo" class="custom-input" style="width:100%; margin-top:4px;" placeholder="e.g. BM018 or KA51AH..." />
+            <div style="display:flex; gap:6px; margin-top:6px;">
+              <button class="btn-secondary" style="font-size:10px; padding:3px 8px;" onclick="document.getElementById('washEntryBusNo').value='BM082'">BM082 (Charge Over)</button>
+              <button class="btn-secondary" style="font-size:10px; padding:3px 8px;" onclick="document.getElementById('washEntryBusNo').value='BM085'">BM085 (Charge Over)</button>
+            </div>
+          </div>
+
+          <div>
+            <label style="font-size:11px; font-weight:700; color:var(--text-secondary);">Clean Service Program</label>
+            <select class="custom-select" style="width:100%; margin-top:4px;" disabled>
+              <option>Automated High-Pressure Chassis & Body Wash (20 Min SLA)</option>
+            </select>
+          </div>
+
+          <button class="btn-primary" style="margin-top:6px; justify-content:center;" onclick="startWashServiceManual()">
+            ▶ Start 20-Min Clean Service
+          </button>
+        </div>
+      </div>
+
+      <!-- Active Automated 20-Min Wash Bays -->
+      <div class="panel-box" style="padding:16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+          <h3 style="font-size:13.5px; font-weight:800; color:var(--text-bright);">Active Automated Wash Bays (4 Stalls)</h3>
+          <button class="btn-secondary" style="font-size:11px;" onclick="fastCompleteAllWashes()">⏩ Fast-Complete All Active Washes (Sim)</button>
+        </div>
+
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:12px;" id="washBaysContainer">
+          <!-- Populated via JS -->
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Completed Washes: Pre-Departure Check Sign-Off -->
+    <div class="panel-box" style="margin-top:16px;">
+      <div class="panel-header-bar">
+        <div>
+          <h2>Pre-Departure Inspector Verification Queue</h2>
+          <p>Buses completed 20-min wash service awaiting sign-off to enter Shed-Out Ready pool</p>
+        </div>
+        <button class="btn-secondary" onclick="signOffAllPreCheck()">✓ Sign-Off All for Shed-Out</button>
+      </div>
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Bus ID</th>
+              <th>Depot Name</th>
+              <th>Tested Range</th>
+              <th>SOC</th>
+              <th>Wash Completion</th>
+              <th>Inspector Checklist</th>
+              <th>Turnaround Status</th>
+              <th>Sign-Off Action</th>
+            </tr>
+          </thead>
+          <tbody id="preCheckTableBody">
+            <!-- Populated via JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- TAB 4: SUBSTATION & 16-BAY CHARGERS -->
+  <div id="tab-chargers" class="tab-pane">
+    <div style="display:grid; grid-template-columns: 1fr 340px; gap:16px;">
+      <div>
+        <!-- Substation Power Monitor -->
+        <div class="panel-box" style="margin-bottom:16px;">
+          <div class="panel-header-bar">
+            <div>
+              <h2>Chandapura Depot 44 Substation Power Monitor</h2>
+              <p>2,800 kW Transformer Capacity • Time-of-Use Peak Demand Shaving</p>
+            </div>
+            <div style="font-family:var(--font-mono); font-weight:800; font-size:16px; color:var(--brand-primary);" id="substationPowerDisplay">
+              1,840 kW / 2,800 kW (65.7%)
+            </div>
+          </div>
+          <div style="padding:16px 20px;">
+            <div style="height:12px; background:var(--bg-card-alt); border:1px solid var(--border-card); border-radius:6px; overflow:hidden; margin-bottom:12px;">
+              <div id="substationBarFill" style="height:100%; width:65.7%; background:var(--brand-primary); transition: width 0.4s;"></div>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-secondary); font-family:var(--font-mono);">
+              <span>0 kW</span><span>1,400 kW (Nominal)</span><span>2,200 kW (Peak Warning)</span><span>2,800 kW (Cap)</span>
+            </div>
+            <div style="height:200px; margin-top:16px;">
+              <canvas id="substationChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- 16 Dual-Gun Charger Bays Grid -->
+        <div class="panel-box">
+          <div class="panel-header-bar">
+            <h2>16 Fast-Charging Stalls (Dual Gun 120 kW CCS-2)</h2>
+            <div style="font-size:11.5px; color:var(--text-secondary);">Click "Send to Wash" when charge finishes</div>
+          </div>
+          <div style="padding:16px;">
+            <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap:12px;" id="chargerBaysGrid">
+              <!-- Populated via JS -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside>
+        <div class="panel-box" style="margin-bottom:16px;">
+          <div class="panel-header-bar">
+            <h3 style="font-size:13px; font-weight:800; color:var(--text-bright);">ToU Tariff Windows</h3>
+          </div>
+          <div style="padding:14px; display:flex; flex-direction:column; gap:10px; font-size:11.5px;">
+            <div style="background:var(--status-amber); border:1px solid #C5A059; padding:10px; border-radius:6px; color:#111827;">
+              <div style="font-weight:800;">☀️ Solar Window (10:00 - 16:00)</div>
+              <div style="font-size:11px; margin-top:2px;">₹4.20 / kWh (Optimal bulk charging)</div>
+            </div>
+            <div style="background:var(--bg-card-subtle); border:1px solid var(--border-card); padding:10px; border-radius:6px;">
+              <div style="font-weight:800; color:var(--text-bright);">⚡ Peak Tariff (18:00 - 22:00)</div>
+              <div style="font-size:11px; color:var(--text-secondary); margin-top:2px;">₹8.50 / kWh (Avoid high load)</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel-box">
+          <div class="panel-header-bar">
+            <h3 style="font-size:13px; font-weight:800; color:var(--text-bright);">CC-CV Estimator</h3>
+          </div>
+          <div style="padding:14px; display:flex; flex-direction:column; gap:10px;">
+            <div>
+              <label style="font-size:11px; color:var(--text-secondary);">Start SOC (%)</label>
+              <input type="number" id="calcStartSoc" class="custom-input" style="width:100%; margin-top:4px;" value="20" min="5" max="95" oninput="calculateChargeTime()" />
+            </div>
+            <div>
+              <label style="font-size:11px; color:var(--text-secondary);">Target SOC (%)</label>
+              <input type="number" id="calcTargetSoc" class="custom-input" style="width:100%; margin-top:4px;" value="98" min="25" max="100" oninput="calculateChargeTime()" />
+            </div>
+            <div style="background:var(--bg-card-subtle); border:1px solid var(--border-card); border-radius:8px; padding:12px; margin-top:6px;">
+              <div style="font-size:10px; color:var(--text-secondary); text-transform:uppercase; font-weight:700;">Duration to 20-Min Wash</div>
+              <div style="font-size:20px; font-weight:800; font-family:var(--font-mono); color:var(--brand-primary); margin:4px 0;" id="calcResultTime">1h 38m</div>
+              <div style="font-size:10.5px; color:var(--text-secondary);" id="calcResultBreakdown">CC: 55m • CV Taper: 43m</div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- TAB 5: 24-HOUR DISPATCH TIMELINE (GANTT) -->
+  <div id="tab-timeline" class="tab-pane">
+    <div class="panel-box">
+      <div class="panel-header-bar">
+        <div>
+          <h2>24-Hour Concession Dispatch Timeline</h2>
+          <p>Operational schedule blocks across Night Halt, General Shift, Shift A, and Shift B</p>
+        </div>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <input type="range" id="timelineScrubber" min="0" max="24" step="0.25" value="8.5" style="width:200px;" oninput="onScrubberChange(this.value)" />
+          <span style="font-family:var(--font-mono); font-weight:700; font-size:13px; color:var(--brand-primary);" id="scrubberTimeLabel">08:30 IST</span>
+        </div>
+      </div>
+      <div style="padding:16px;">
+        <div class="gantt-wrap">
+          <div class="time-scrubber-line" id="timelineScrubberLine" style="left: 650px;">
+            <div class="time-scrubber-head" id="timelineScrubberHead">08:30</div>
+          </div>
+          <div style="display:grid; grid-template-columns: 140px 1fr; align-items:center; margin-bottom:8px;">
+            <div style="font-weight:700; font-size:11px; color:var(--text-secondary);">BUS / CORRIDOR</div>
+            <div class="gantt-header-hours">
+              <span>00:00</span><span>01:00</span><span>02:00</span><span>03:00</span><span>04:00</span><span>05:00</span>
+              <span>06:00</span><span>07:00</span><span>08:00</span><span>09:00</span><span>10:00</span><span>11:00</span>
+              <span>12:00</span><span>13:00</span><span>14:00</span><span>15:00</span><span>16:00</span><span>17:00</span>
+              <span>18:00</span><span>19:00</span><span>20:00</span><span>21:00</span><span>22:00</span><span>23:00</span>
+            </div>
+          </div>
+          <div id="ganttRowsContainer">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 6: MULTI-ACTOR DEFECT & GOVERNANCE CONSOLE -->
+  <div id="tab-defects" class="tab-pane">
+    
+    <!-- Actor View Switcher Header -->
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+      <div>
+        <h2 style="font-size:16px; font-weight:800; color:var(--text-bright);">Multi-Actor Defect & Verification Governance</h2>
+        <p style="font-size:11.5px; color:var(--text-secondary);">Tailored access for PDI Inspector, Internal/External Supervisors, Depot Manager, and City Manager</p>
+      </div>
+      <div class="actor-pill-group">
+        <button class="actor-pill-btn active" id="btnActorInspector" onclick="setActorView('inspector')">?? PDI Inspector</button>
+        <button class="actor-pill-btn" id="btnActorDepotMgr" onclick="setActorView('depot_mgr')">?? Depot Manager</button>
+        <button class="actor-pill-btn" id="btnActorCityMgr" onclick="setActorView('city_mgr')">?? City Manager</button>
+      </div>
+    </div>
+
+    <!-- VIEW A: PDI INSPECTOR CONSOLE -->
+    <div id="actorViewInspector">
+      <div style="display:grid; grid-template-columns: 380px 1fr; gap:16px;">
+        
+        <!-- Defect Logging Card -->
+        <div class="panel-box" style="padding:16px;">
+          <h3 style="font-size:13.5px; font-weight:800; color:var(--text-bright); margin-bottom:4px;">Log Vehicle Defect</h3>
+          <p style="font-size:11px; color:var(--text-secondary); margin-bottom:14px;">Record issues upon arrival or pre-shed-out inspection.</p>
+
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            <div>
+              <label style="font-size:11px; font-weight:700; color:var(--text-secondary);">Depot Number & Location</label>
+              <select id="defectDepotSelect" class="custom-select" style="width:100%; margin-top:4px;">
+                <option value="Depot 44 (Chandapura)">Depot 44 (Chandapura Master Depot)</option>
+                <option value="Depot 28 (Electronic City)">Depot 28 (Electronic City Hub)</option>
+                <option value="Depot 18 (Silk Board)">Depot 18 (Silk Board Interchange)</option>
+                <option value="Depot 12 (Attibele)">Depot 12 (Attibele Border Facility)</option>
+              </select>
+            </div>
+
+            <div>
+              <label style="font-size:11px; font-weight:700; color:var(--text-secondary);">Bus No. (Manual Entry / Select)</label>
+              <input type="text" id="defectBusInput" class="custom-input" style="width:100%; margin-top:4px;" placeholder="e.g. BM042 or select..." list="busDatalist" />
+              <datalist id="busDatalist">
+                <option value="BM001"><option value="BM042"><option value="BM085"><option value="BM110">
+              </datalist>
+            </div>
+
+            <div>
+              <label style="font-size:11px; font-weight:700; color:var(--text-secondary);">Defect Category (Manager Configured)</label>
+              <select id="defectCategorySelect" class="custom-select" style="width:100%; margin-top:4px;">
+                <option value="HV Battery & Electrical">High Voltage Battery & Inverter (Electrical)</option>
+                <option value="HVAC & Thermal">HVAC Auxiliary Compressor & Climate</option>
+                <option value="Suspension & Brakes">Pneumatic Suspension & Brakes (Mechanical)</option>
+                <option value="Doors & Interior">Passenger Doors & PDI Interior</option>
+                <option value="Body & Glass">Body Paint, Glass & Mirrors (Exterior)</option>
+                <option value="Telematics & ITS">ITS Headway Tracker & Telematics</option>
+              </select>
+            </div>
+
+            <div>
+              <label style="font-size:11px; font-weight:700; color:var(--text-secondary);">Complaint Description</label>
+              <textarea id="defectDescInput" class="custom-input" style="width:100%; height:60px; margin-top:4px; font-family:var(--font-sans);" placeholder="e.g. Intermittent HVAC compressor trip during peak thermal load..."></textarea>
+            </div>
+
+            <div>
+              <label style="font-size:11px; font-weight:700; color:var(--text-secondary);">Severity / Dispatch Priority</label>
+              <select id="defectSeveritySelect" class="custom-select" style="width:100%; margin-top:4px;">
+                <option value="High (Ground Vehicle)">Critical / High (Ground Vehicle - Hold Shed-Out)</option>
+                <option value="Medium (Service Bay)">Medium (Service Bay Scheduled)</option>
+                <option value="Low (Minor)">Low (Minor Defect - Log Only)</option>
+              </select>
+            </div>
+
+            <!-- Targeted Supervisor Dispatch (Transcript: msg -> int supervisor / ext supervisor) -->
+            <div style="background:var(--bg-card-alt); border:1px solid var(--border-card); border-radius:8px; padding:10px; margin-top:6px;">
+              <div style="font-size:10.5px; font-weight:700; color:var(--text-secondary); text-transform:uppercase;">Direct Supervisor Dispatch</div>
+              <div style="display:flex; gap:8px; margin-top:6px;">
+                <button class="btn-primary" style="flex:1; font-size:10.5px; padding:6px;" onclick="logAndDispatchDefect('internal')">
+                  ⚡ Internal Supervisor (Electrical/HV Only)
+                </button>
+                <button class="btn-secondary" style="flex:1; font-size:10.5px; padding:6px;" onclick="logAndDispatchDefect('external')">
+                  ?? External Supervisor (Body/Vendor)
+                </button>
+              </div>
+              <div style="font-size:10px; color:var(--text-muted); margin-top:4px;">*Shares only technical defect item, excluding administrative data.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Active Defect Log & Triage Stream -->
+        <div class="panel-box">
+          <div class="panel-header-bar">
+            <h2>Depot 44 Active Defect Triage Log</h2>
+            <div style="font-size:11px; color:var(--text-secondary);">DPV Threshold: < 0.15 per vehicle</div>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Log ID</th>
+                  <th>Bus ID</th>
+                  <th>Depot</th>
+                  <th>Category</th>
+                  <th>Complaint</th>
+                  <th>Dispatched To</th>
+                  <th>Priority</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="defectLogTableBody">
+                <!-- Populated via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- VIEW B: DEPOT MANAGER LEVEL -->
+    <div id="actorViewDepotMgr" style="display:none;">
+      <div style="display:grid; grid-template-columns: 1fr 360px; gap:16px;">
+        
+        <!-- Recurring Defect Watchdog -->
+        <div class="panel-box">
+          <div class="panel-header-bar">
+            <h2>Recurring Defect Watchdog (Depot 44 Chandapura)</h2>
+            <span style="font-size:11px; font-weight:700; color:var(--brand-primary);">Alert Threshold: ≥ 2 Repeat Complaints</span>
+          </div>
+          <div style="padding:16px;">
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:12px;" id="recurringDefectsContainer">
+              <!-- Populated via JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Manager Features: Add Category & Policy -->
+        <div class="panel-box" style="padding:16px;">
+          <h3 style="font-size:13.5px; font-weight:800; color:var(--text-bright); margin-bottom:4px;">Depot Manager Governance</h3>
+          <p style="font-size:11px; color:var(--text-secondary); margin-bottom:12px;">Add custom defect categories & adjust SLA rules.</p>
+          
+          <div>
+            <label style="font-size:11px; font-weight:700; color:var(--text-secondary);">Add New Defect Category</label>
+            <div style="display:flex; gap:6px; margin-top:4px;">
+              <input type="text" id="newCategoryInput" class="custom-input" style="flex:1;" placeholder="e.g. Regenerative Brake Heat..." />
+              <button class="btn-primary" onclick="addCustomCategory()">Add</button>
+            </div>
+          </div>
+
+          <div style="margin-top:16px; background:var(--bg-card-subtle); border:1px solid var(--border-card); border-radius:8px; padding:12px;">
+            <div style="font-size:11px; font-weight:700; color:var(--text-bright);">Depot 44 Sign-Off Authority</div>
+            <div style="font-size:11px; color:var(--text-secondary); margin-top:4px;">
+              All vehicles on Defect Hold require Depot Manager clearance before entering 20-min wash bay.
+            </div>
+            <button class="btn-secondary" style="margin-top:10px; width:100%; justify-content:center;" onclick="clearAllDefectHolds()">
+              ✓ Clear Qualified Holds for Wash
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- VIEW C: CITY MANAGER LEVEL -->
+    <div id="actorViewCityMgr" style="display:none;">
+      <div class="panel-box">
+        <div class="panel-header-bar">
+          <h2>City-Wide Multi-Depot Verification Console (Bengaluru Concession)</h2>
+          <div style="font-size:11px; color:var(--text-secondary);">Whole City Fleet Governance & Defect Comparison</div>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Depot ID & Name</th>
+                <th>Fleet Size</th>
+                <th>Shed-Out Solvency</th>
+                <th>20-Min Wash Throughput</th>
+                <th>Defects Per Veh (DPV)</th>
+                <th>Recurring Defect Rate</th>
+                <th>Substation Load</th>
+                <th>City SLA Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="font-weight:800; color:var(--text-bright);">Depot 44 (Chandapura Master)</td>
+                <td style="font-family:var(--font-mono);">122 Switch EiV 12</td>
+                <td style="font-weight:700; color:var(--brand-primary);">98.5% Solvency</td>
+                <td>45 Washed / 4 Active</td>
+                <td style="font-family:var(--font-mono); font-weight:700;">0.08 DPV</td>
+                <td>3 Vehicles</td>
+                <td style="font-family:var(--font-mono);">1,840 kW / 2,800 kW</td>
+                <td><span style="font-weight:800; color:var(--brand-primary);">✓ Certified</span></td>
+              </tr>
+              <tr>
+                <td style="font-weight:800; color:var(--text-bright);">Depot 28 (Electronic City)</td>
+                <td style="font-family:var(--font-mono);">85 Switch EiV 12</td>
+                <td style="font-weight:700; color:var(--brand-primary);">99.1% Solvency</td>
+                <td>32 Washed / 2 Active</td>
+                <td style="font-family:var(--font-mono); font-weight:700;">0.06 DPV</td>
+                <td>1 Vehicle</td>
+                <td style="font-family:var(--font-mono);">1,280 kW / 2,000 kW</td>
+                <td><span style="font-weight:800; color:var(--brand-primary);">✓ Certified</span></td>
+              </tr>
+              <tr>
+                <td style="font-weight:800; color:var(--text-bright);">Depot 18 (Silk Board Hub)</td>
+                <td style="font-family:var(--font-mono);">64 Switch EiV 12</td>
+                <td style="font-weight:700; color:var(--text-bright);">97.4% Solvency</td>
+                <td>24 Washed / 3 Active</td>
+                <td style="font-family:var(--font-mono); font-weight:700;">0.12 DPV</td>
+                <td>4 Vehicles</td>
+                <td style="font-family:var(--font-mono);">950 kW / 1,500 kW</td>
+                <td><span style="font-weight:800; color:var(--text-bright);">✓ Certified</span></td>
+              </tr>
+              <tr>
+                <td style="font-weight:800; color:var(--text-bright);">Depot 12 (Attibele Border)</td>
+                <td style="font-family:var(--font-mono);">45 Switch EiV 12</td>
+                <td style="font-weight:700; color:var(--brand-primary);">98.8% Solvency</td>
+                <td>18 Washed / 1 Active</td>
+                <td style="font-family:var(--font-mono); font-weight:700;">0.05 DPV</td>
+                <td>0 Vehicles</td>
+                <td style="font-family:var(--font-mono);">680 kW / 1,000 kW</td>
+                <td><span style="font-weight:800; color:var(--brand-primary);">✓ Certified</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- TAB 7: FLEET MASTER & BATTERY HEALTH -->
+  <div id="tab-fleet" class="tab-pane">
+    <div style="display:grid; grid-template-columns: 1fr 380px; gap:16px; margin-bottom:18px;">
+      
+      <!-- SOH vs Tested Range Scatter -->
+      <div class="panel-box" style="margin:0;">
+        <div class="panel-header-bar">
+          <h2>Battery SOH vs Actual Tested Range (122 Buses)</h2>
+          <p>Cell degradation and range correlation</p>
+        </div>
+        <div style="padding:16px; height:270px;">
+          <canvas id="batteryScatterChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Quick Health Stats -->
+      <div class="panel-box" style="margin:0; padding:16px; display:flex; flex-direction:column; justify-content:space-between;">
+        <div>
+          <h3 style="font-size:13px; font-weight:800; color:var(--text-bright); margin-bottom:10px;">Fleet Health Overview</h3>
+          <div style="display:flex; flex-direction:column; gap:7px; font-size:11.5px;">
+            <div style="display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px solid var(--border-card);">
+              <span style="color:var(--text-secondary);">Mean Tested Range</span>
+              <span style="font-family:var(--font-mono); font-weight:700; color:var(--text-bright);">117.4 km</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px solid var(--border-card);">
+              <span style="color:var(--text-secondary);">Max Range (BM004)</span>
+              <span style="font-family:var(--font-mono); font-weight:700; color:var(--brand-primary);">136.3 km</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px solid var(--border-card);">
+              <span style="color:var(--text-secondary);">Min Range (BM262)</span>
+              <span style="font-family:var(--font-mono); font-weight:700; color:var(--text-bright);">62.0 km</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px solid var(--border-card);">
+              <span style="color:var(--text-secondary);">Average Fleet SOH</span>
+              <span style="font-family:var(--font-mono); font-weight:700; color:var(--brand-primary);">96.8%</span>
+            </div>
+          </div>
+        </div>
+        <div style="background:var(--bg-card-subtle); border:1px solid var(--border-card); border-radius:8px; padding:10px; font-size:11px; color:var(--text-bright); font-weight:600;">
+          ✓ All 122 Switch EiV 12 packs meet OEM ISO 26262 functional safety and degradation standards.
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Master 122 Buses Data Grid -->
+    <div class="panel-box">
+      <div class="panel-header-bar">
+        <div class="panel-title-area">
+          <h2>All 122 Switch Electric Buses Master Telemetry</h2>
+          <p>Real-time SOH, SOC, RTO Registration, Depot Location, and Turnaround State</p>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <select class="custom-select" id="fleetCatFilter" onchange="renderFleetTable()">
+            <option value="ALL">All Categories</option>
+            <option value="A">Category A (>120 km)</option>
+            <option value="B">Category B (100-120 km)</option>
+            <option value="C">Category C (<100 km)</option>
+          </select>
+          <input type="text" class="custom-input" id="fleetSearch" placeholder="Search Bus / Driver..." onkeyup="renderFleetTable()" />
+        </div>
+      </div>
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Bus ID</th>
+              <th>Registration</th>
+              <th>Make / Model</th>
+              <th>Category</th>
+              <th>Depot Location</th>
+              <th>Tested Range</th>
+              <th>Live SOC</th>
+              <th>Battery SOH</th>
+              <th>Turnaround State</th>
+              <th>Assigned Driver</th>
+            </tr>
+          </thead>
+          <tbody id="fleetTableBody">
+            <!-- Populated via JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 8: DRIVER MANAGEMENT & ROSTER -->
+  <div id="tab-drivers" class="tab-pane">
+    <!-- Rendered dynamically via renderDriverRoster() -->
+  </div>
+  <!-- TAB 8: AI OPERATIONS ASSISTANT & SIMULATOR -->
+  <div id="tab-assistant" class="tab-pane">
+    <div style="display:grid; grid-template-columns: 1fr 380px; gap:16px;">
+      
+      <!-- Chat Interface -->
+      <div class="panel-box" style="margin:0; height:580px; display:flex; flex-direction:column;">
+        <div class="panel-header-bar">
+          <div>
+            <h2>Natural Transit Intelligence Assistant</h2>
+            <p>Powered by Gemini Transit Engine • Ask complex fleet routing questions</p>
+          </div>
+          <button class="btn-secondary" onclick="openGeminiApiKeyModal()">?? Gemini API Config</button>
+        </div>
+        
+        <div style="flex:1; padding:16px; overflow-y:auto; display:flex; flex-direction:column; gap:12px;" id="assistantChatLog">
+          <div style="background:var(--bg-card-subtle); padding:12px 16px; border-radius:8px; border:1px solid var(--border-card); max-width:88%; line-height:1.5;">
+            <div style="font-weight:700; color:var(--brand-primary); margin-bottom:4px;">?? Gemini Transit Dispatch Assistant:</div>
+            Greetings, Depot Manager. All 122 Switch Electric Buses are synchronized across Chandapura Depot 44. Dedicated EV concession schedules are allocated automatically. Automated 20-min wash bays and defect governance consoles are live. Ask me anything about turnaround wait times, recurring complaints, or schedule swaps.
+          </div>
+        </div>
+
+        <div style="padding:14px; border-top:1px solid var(--border-card); background:var(--bg-surface);">
+          <div style="display:flex; gap:6px; margin-bottom:10px; flex-wrap:wrap;">
+            <button class="btn-secondary" style="font-size:10.5px;" onclick="quickPrompt('How many buses are currently in 20-Min Wash Bay?')">Wash Bay Count</button>
+            <button class="btn-secondary" style="font-size:10.5px;" onclick="quickPrompt('Which buses have recurring HVAC complaints in Depot 44?')">Recurring HVAC Issues</button>
+            <button class="btn-secondary" style="font-size:10.5px;" onclick="quickPrompt('Why is BM004 assigned to SW-328 instead of SW-356?')">Why BM004 on SW-328?</button>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <input type="text" id="assistantInput" class="custom-input" style="flex:1;" placeholder="Ask operations assistant... (e.g. Is BM042 ready for Shed-Out?)" onkeydown="if(event.key==='Enter') sendAssistantMessage()" />
+            <button class="btn-primary" onclick="sendAssistantMessage()">Send</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Operational Stress Simulator -->
+      <aside class="panel-box" style="margin:0; padding:16px; display:flex; flex-direction:column; gap:14px;">
+        <div>
+          <h3 style="font-size:13px; font-weight:800; color:var(--text-bright); margin-bottom:4px;">Scenario Stress Simulator</h3>
+          <p style="font-size:11px; color:var(--text-secondary);">Test fleet solvency under adverse environmental and traffic conditions.</p>
+        </div>
+
+        <div>
+          <label style="font-size:10.5px; font-weight:700; color:var(--text-secondary); text-transform:uppercase;">Weather & Temperature</label>
+          <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:6px; margin-top:6px;">
+            <button class="sim-speed-btn active" id="btnEnvNormal" onclick="setWeather('normal')">Clear 28°C</button>
+            <button class="sim-speed-btn" id="btnEnvRain" onclick="setWeather('rain')">Monsoon ??</button>
+            <button class="sim-speed-btn" id="btnEnvSummer" onclick="setWeather('summer')">Heatwave 42°C</button>
+          </div>
+        </div>
+
+        <div>
+          <label style="font-size:10.5px; font-weight:700; color:var(--text-secondary); text-transform:uppercase;">Traffic Congestion (Hosur Rd / Silk Board)</label>
+          <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:6px; margin-top:6px;">
+            <button class="sim-speed-btn active" id="btnTrafNormal" onclick="setTraffic('normal')">Free Flow</button>
+            <button class="sim-speed-btn" id="btnTrafMedium" onclick="setTraffic('medium')">Moderate</button>
+            <button class="sim-speed-btn" id="btnTrafSevere" onclick="setTraffic('severe')">Gridlock</button>
+          </div>
+        </div>
+
+        <div style="background:var(--bg-card-subtle); border:1px solid var(--border-card); border-radius:8px; padding:12px; margin-top:auto;">
+          <div style="font-size:10.5px; color:var(--text-secondary); text-transform:uppercase; font-weight:700;">Simulated Fleet Solvency Impact</div>
+          <div style="font-size:20px; font-weight:800; font-family:var(--font-mono); color:var(--text-bright); margin:5px 0;" id="simBufferVal">+34.8 km</div>
+          <div style="font-size:11px; color:var(--text-secondary);" id="simRiskVal">0 Schedules at Risk (< 15 km reserve)</div>
+        </div>
+      </aside>
+
+    </div>
+  </div>
+
+</main>
+
+
+<!-- Modals (Gemini API Key & Bus Assignment) -->
+<div class="modal-overlay" id="geminiModal">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <h3>Configure Gemini API Key</h3>
+      <button class="btn-secondary" style="font-size:10px; padding:3px 8px;" onclick="document.getElementById('geminiModal').classList.remove('active')">Close</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:11px; color:var(--text-secondary); margin-bottom:12px;">Enter your Google Gemini API key to enable the AI Operations Assistant. The key is stored locally in your browser.</p>
+      <input type="password" id="geminiApiKeyInput" class="custom-input" style="width:100%; margin-bottom:12px;" placeholder="AIzaSy..." />
+      <div style="font-size:10px; color:var(--text-muted); margin-bottom:12px;">Get a key at <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--brand-primary);">Google AI Studio</a></div>
+      <button class="btn-primary" onclick="saveGeminiKey()" style="width:100%; justify-content:center;">Save & Activate AI Assistant</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="busModal">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <h3>Assign Bus to Schedule</h3>
+      <button class="btn-secondary" style="font-size:10px; padding:3px 8px;" onclick="document.getElementById('busModal').classList.remove('active')">Close</button>
+    </div>
+    <div class="modal-body" id="busModalBody">
+      <!-- Populated via JS -->
+    </div>
+  </div>
+</div>
+
+<!-- Load Data First, Then App Logic -->
+<script src="data/app_data.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+</html>

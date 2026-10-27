@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Smart Fleet OS – Admin Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚌</text></svg>">
+<style>
+:root{--bg:#F7F5F0;--card:#FFFFFF;--ink:#34454C;--mut:#7B8688;--line:#0093A5;--btn:#D96629;--btnh:#bd5324;--slate:#687489;--ok:#059669;--warn:#F9A825;--blue:#1976D2;--p1:#E3F2FD;--p2:#E8F5E9;--p4:#FFFDE7;--bad:#DC2626;--land:#E8ECE7;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#111314;--card:#1E272B;--ink:#F0F2F2;--mut:#A2B0AD;--line:#2DB7C9;--btn:#E57338;--btnh:#d7652d;--slate:#56637a;--ok:#81C784;--warn:#FFE082;--blue:#90CAF9;--p1:rgba(25,118,210,.2);--p2:rgba(56,142,60,.2);--p4:rgba(249,168,37,.2);--bad:#EF7777;--land:#263238}}
+:root[data-theme="dark"]{--bg:#111314;--card:#1E272B;--ink:#F0F2F2;--mut:#A2B0AD;--line:#2DB7C9;--btn:#E57338;--btnh:#d7652d;--slate:#56637a;--ok:#81C784;--warn:#FFE082;--blue:#90CAF9;--p1:rgba(25,118,210,.2);--p2:rgba(56,142,60,.2);--p4:rgba(249,168,37,.2);--bad:#EF7777;--land:#263238}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;min-height:100vh}
+.wrap{max-width:1150px;margin:0 auto;padding:16px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.layout{display:flex;align-items:flex-start;gap:20px}
+.sidebar{width:220px;flex:0 0 220px;display:flex;flex-direction:column;gap:12px;background:var(--card);border-radius:14px;padding:16px;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+.sidebar .pill{display:block;text-align:center}
+.side-nav{display:grid;gap:6px}.logout-item{margin-top:8px;color:var(--bad);text-align:center}
+.nav-item{width:100%;text-align:left;border:0;border-radius:8px;background:transparent;padding:10px 12px;cursor:pointer;font-weight:600;color:var(--mut)}
+.nav-item:hover{background:var(--bg)}
+.nav-item.on{background:var(--line);color:#fff}
+.scanned-bus td{background:color-mix(in srgb,var(--ok) 14%,var(--card))}
+.scanned-bus td:first-child{box-shadow:inset 4px 0 var(--ok)}
+.main-content{flex:1;min-width:0}
+.pill{padding:8px 16px;border-radius:99px;font-weight:700;font-size:14px;background:var(--p1);color:var(--blue)}
+button,select,input,textarea{font:inherit;color:var(--ink)}
+.ghost{background:transparent;border:1.5px solid var(--line);border-radius:8px;padding:8px 14px;cursor:pointer;color:var(--mut)}
+.card{background:var(--card);border-radius:14px;padding:22px;margin-top:16px;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+h1{margin:16px 0 2px;font-size:28px;text-align:center}h2{margin:0 0 6px;font-size:21px}h3{margin:0 0 10px;font-size:16px}
+.sub{color:var(--mut);margin:0 0 12px;text-align:center}.sub.l{text-align:left}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.kpi{border:1.5px solid var(--line);border-radius:12px;padding:14px;background:var(--card)}.kpi b{display:block;font-size:28px}.kpi span{color:var(--mut);font-size:13px}
+.bar{display:flex;height:16px;border-radius:99px;overflow:hidden;background:var(--bg);margin:10px 0 6px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--mut)}.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px}
+.tools{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}
+.tools input,.tools select,.inl,.f input,.f select,.f textarea{padding:10px 12px;border:1.5px solid var(--line);border-radius:8px;background:var(--bg);width:100%}
+.tools input{flex:1;min-width:180px;width:auto}.tools select{width:auto}.inl{width:auto;min-width:130px}
+.btn{background:var(--btn);color:#fff;border:0;border-radius:8px;padding:9px 14px;font-weight:700;cursor:pointer}.btn:hover{background:var(--btnh)}
+.btn.s{background:var(--slate)}.btn.sm{padding:6px 10px;font-size:13px}.btn.out{background:transparent;color:var(--bad);border:1.5px solid var(--bad)}
+.tw{overflow-x:auto;border:1px solid color-mix(in srgb,var(--line) 40%,transparent);border-radius:10px}
+table{border-collapse:collapse;width:100%;min-width:600px}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid color-mix(in srgb,var(--line) 25%,transparent);font-size:14px}
+th{color:var(--mut);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+.tag{padding:3px 10px;border-radius:99px;font-size:12px;font-weight:700;display:inline-block}
+.t-ok{background:var(--p2);color:var(--ok)}.t-w{background:var(--p4);color:var(--warn)}.t-b{background:var(--p1);color:var(--blue)}
+.log{font-size:13px;color:var(--mut);margin:0;padding:0;list-style:none}.log li{padding:6px 0;border-bottom:1px dashed color-mix(in srgb,var(--line) 30%,transparent)}
+.login{max-width:400px;margin:10vh auto 0}.login label,.f label{display:block;font-weight:700;margin:12px 0 6px;font-size:14px}
+.login input{width:100%;padding:12px;border:1.5px solid var(--line);border-radius:8px;background:var(--bg)}
+.login-submit{transition:background .2s,box-shadow .2s}
+.login-submit.ready{background:var(--line);box-shadow:0 0 0 3px color-mix(in srgb,var(--line) 25%,transparent)}
+.login-submit.ready:hover{background:var(--blue)}
+.scan-overlay{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.68)}
+.scan-dialog{width:min(620px,100%);max-height:90vh;overflow:auto;padding:20px;border-radius:14px;background:var(--card);box-shadow:0 12px 48px rgba(0,0,0,.3)}
+.scan-dialog video{display:block;width:100%;max-height:52vh;aspect-ratio:4/3;object-fit:cover;background:#111;border-radius:10px}
+.scan-actions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.scan-status{min-height:24px;color:var(--mut);font-size:14px}
+.scan-result{width:100%;min-height:78px;padding:10px 12px;border:1.5px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);resize:vertical}
+.scan-candidates{display:grid;gap:8px;margin-top:10px}
+.scan-candidates button{text-align:left}
+.err{color:var(--bad);min-height:20px;font-size:13px;margin-top:10px}.empty{padding:26px;text-align:center;color:var(--mut)}
+.g2{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.f textarea{min-height:110px;resize:vertical}.hint{font-size:12px;color:var(--mut);font-weight:400}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.chip{background:var(--bg);border:1px solid var(--line);border-radius:99px;padding:3px 10px;font-size:13px}.chip a{cursor:pointer;color:var(--bad);margin-left:6px}
+.map{width:100%;max-width:460px;margin:0 auto;display:block}.mapbox{display:grid;grid-template-columns:minmax(260px,460px) 1fr;gap:18px;align-items:center}
+@media(max-width:760px){.mapbox{grid-template-columns:1fr}.layout{display:block}.sidebar{width:auto;margin-bottom:16px}.side-nav{display:flex;overflow-x:auto}.nav-item{width:auto;flex:0 0 auto;white-space:nowrap}}
+code{background:var(--bg);padding:2px 6px;border-radius:6px}
+#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--slate);color:#fff;padding:10px 18px;border-radius:10px;opacity:0;transition:.25s;pointer-events:none;z-index:9;max-width:90vw;text-align:center}
+#toast.on{opacity:1}
+.registry-filters{display:grid;grid-template-columns:minmax(220px,2fr) repeat(3,minmax(130px,1fr));gap:9px;margin:12px 0}.registry-filters input,.registry-filters select{padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink);min-width:0}.tag.cat-a{background:var(--p1);color:var(--blue)}.tag.cat-b{background:var(--p2);color:#388E3C}.tag.cat-c{background:var(--p4);color:var(--warn)}.metric-note{font-size:11px;color:var(--mut)}@media(max-width:900px){.registry-filters{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:520px){.registry-filters{grid-template-columns:1fr}}</style></head>
+<body><div class="wrap" id="app"></div><div id="scannerLayer"></div><div id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+<script>
+const CITIES=[["Bengaluru",12.97,77.59,"KA"],["Chennai",13.08,80.27,"TN"],["Hyderabad",17.38,78.48,"TS"],["Mumbai",19.08,72.88,"MH"],["Pune",18.52,73.86,"MH"],["Delhi",28.61,77.21,"DL"],["Kolkata",22.57,88.36,"WB"],["Kochi",9.93,76.27,"KL"],["Ahmedabad",23.02,72.57,"GJ"],["Jaipur",26.91,75.79,"RJ"],["Other (enter lat / lon)",0,0,"XX"]];
+const ROLES=[["entry","Entry Recorder"],["clean","Cleaner"],["charge","Charging Incharge"],["sched","Scheduler"],["mgr","Depot Manager"]];
+const OUTLINE=[[74.5,37],[77,35.5],[79,34],[78.5,31],[81,30],[80,28.5],[84,27.5],[88,27],[88.5,26.5],[92,27],[95,28.5],[97,28],[96,26],[94,24],[93,22],[92.5,23],[91.5,24],[89,22],[87,21],[85,19.5],[82.5,17],[80.2,15.5],[80.3,13],[79.8,10.5],[78,8.5],[77.5,8],[76.5,9],[75,12],[74,15],[73,17.5],[72.8,20],[72.5,21.5],[70,21],[69,22.5],[70.5,23],[68.2,23.7],[70,25],[71,27],[74,31],[74.5,34]];
+const KEY="sfos_multi_v2";
+let S,auth={role:"admin"},scanStream=null,scanWorker=null,ocrPromise=null,ui={tab:"net",depot:"",q:"",f:"pending",xf:"",selectedBus:"",registryQ:"",registryCat:"all",registryDepot:"all",registryStatus:"all"};
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const cid=s=>String(s).replace(/[^A-Za-z0-9_-]/g,"");
+const rpw=()=>{const c="abcdefghjkmnpqrstuvwxyz23456789";let o="";for(let i=0;i<8;i++)o+=c[Math.floor(Math.random()*c.length)];return o};
+const lines=t=>[...new Set(String(t).split(/\n/).map(x=>x.trim()).filter(Boolean))];
+const busLines=t=>String(t).split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+const dep=id=>S.depots.find(d=>d.id===id);
+const dn=id=>dep(id)?dep(id).name:"(removed)";
+const bd=id=>S.buses.filter(b=>b.loc===id);
+const stage=b=>!b.entry?"entry":(b.clean&&b.charge)?(b.route?"assigned":"ready"):"processing";
+const tag=(t,c)=>`<span class="tag t-${c}">${t}</span>`;
+const SN={entry:["At entry","w"],processing:["In clean / charge","w"],ready:["Ready pool","ok"],assigned:["Assigned","b"]};
+
+function isAvailableForEntry(b, depotId){
+  if(!b||!depotId)return false;
+  const linked=b.linkedDepots&&b.linkedDepots.length?b.linkedDepots:[b.home||b.loc].filter(Boolean);
+  if(!linked.includes(depotId))return false;
+  if(b.entry)return false;
+  if(b.maintenance)return false;
+  if(b.transferTo){
+    return b.transferTo===depotId;
+  }
+  return true;
+}
+
+function mkDepot(o,pf){
+  let base=(o.name.trim().split(/\s+/)[0]||"depot").toLowerCase().replace(/[^a-z0-9]/g,"").slice(0,10)||"depot",id=base,n=2;
+  while(S&&S.depots.some(d=>d.id===id))id=base+n++;
+  const users={};ROLES.forEach(r=>users[r[0]]={u:id+"-"+r[0],p:pf()});
+  return {id,name:o.name.trim(),city:o.city,lat:+o.lat,lon:+o.lon,routes:o.routes,drivers:o.drivers,users};
+}
+function mkBuses(d,pre,start,st,n){
+  const a=[];
+  for(let i=0;i<n;i++)a.push({
+    id:pre+(start+i),
+    reg:st+"51AH"+String((8184+i*37)%10000).padStart(4,"0"),
+    entry:false,clean:false,charge:false,route:"",driver:"",
+    home:d.id,loc:d.id,linkedDepots:[d.id],
+    transferTo:null,transferFrom:null,transferStatus:null,
+    maintenance:false,entryDepot:null,entryAt:null
+  });
+  return a;
+}
+function flow(d,bs,e,c,ch,a){bs.forEach((b,i)=>{if(i<e){b.entry=true;b.entryDepot=d.id;b.entryAt=new Date().toISOString()}if(i<c)b.clean=true;if(i<ch)b.charge=true;if(i<a){b.route=d.routes[i];b.driver=d.drivers[i]}})}
+function seed(){
+  S={depots:[],buses:[],log:[]};
+  const r=(p,n)=>Array.from({length:n},(_,i)=>p+(101+i)),dr=["Ramesh K","Manjunath S","Imran Pasha","Lokesh B","Venkatesh R","Syed Arif","Prakash N","Gopal M","Naveen Kumar","Basavaraj H"];
+  [["Chandapura Depot 44","Bengaluru",12.8,77.7,"BM",221,"KA",122,[34,14,9,3],"SCH-"],["Tondiarpet Depot","Chennai",13.12,80.29,"TN",100,"TN",40,[15,8,6,2],"CHN-"],["Miyapur Depot","Hyderabad",17.5,78.36,"TS",300,"TS",50,[20,10,8,2],"HYD-"]].forEach(x=>{
+    const d=mkDepot({name:x[0],city:x[1],lat:x[2],lon:x[3],routes:r(x[9],10),drivers:dr.slice()},()=>"demo1234");
+    S.depots.push(d);const bs=mkBuses(d,x[4],x[5],x[6],x[7]);flow(d,bs,...x[8]);S.buses.push(...bs)});
+  
+  const allDepotIds=S.depots.map(d=>d.id);
+  // Shared Bus Example 1: KA-25-1234 shared across Chandapura, Tondiarpet, and Miyapur (awaiting entry)
+  S.buses.unshift({
+    id:"KA-25-1234",reg:"KA-25-1234",entry:false,clean:false,charge:false,route:"",driver:"",
+    home:allDepotIds[0],loc:null,linkedDepots:[...allDepotIds],transferTo:null,transferFrom:null,transferStatus:null,
+    maintenance:false,entryDepot:null,entryAt:null
+  });
+  // Shared Bus Example 2: BM221 shared across Chandapura, Tondiarpet, and Miyapur
+  const bm221=S.buses.find(b=>b.id==="BM221");
+  if(bm221){
+    bm221.linkedDepots=["chandapura","tondiarpet","miyapur"];
+    bm221.entry=false;bm221.loc=null;bm221.clean=false;bm221.charge=false;
+  }
+  // Shared Bus Example 3: BM222 shared across Chandapura and Tondiarpet
+  const bm222=S.buses.find(b=>b.id==="BM222");
+  if(bm222)bm222.linkedDepots=["chandapura","tondiarpet"];
+
+  logm("Demo network loaded: 3 depots, "+S.buses.length+" physical buses (including cross-depot shared fleet)");
+}
+function load(){
+  try{
+    const r=localStorage.getItem(KEY);
+    if(r){
+      S=JSON.parse(r);
+      const allDepotIds=S.depots.map(d=>d.id);
+      S.buses.forEach(b=>{
+        if(!b.linkedDepots||!b.linkedDepots.length)b.linkedDepots=[b.home||b.loc].filter(Boolean);
+        if(b.transferTo===undefined)b.transferTo=null;
+        if(b.transferFrom===undefined)b.transferFrom=null;
+        if(b.transferStatus===undefined)b.transferStatus=null;
+        if(b.maintenance===undefined)b.maintenance=false;
+      });
+      if(!S.buses.some(b=>b.id==="KA-25-1234")){
+        S.buses.unshift({
+          id:"KA-25-1234",reg:"KA-25-1234",entry:false,clean:false,charge:false,route:"",driver:"",
+          home:allDepotIds[0]||"chandapura",loc:null,linkedDepots:[...allDepotIds],transferTo:null,transferFrom:null,transferStatus:null,
+          maintenance:false,entryDepot:null,entryAt:null
+        });
+      }
+      const bm221=S.buses.find(b=>b.id==="BM221");
+      if(bm221&&(!bm221.linkedDepots||bm221.linkedDepots.length<=1)){
+        bm221.linkedDepots=["chandapura","tondiarpet","miyapur"];
+        bm221.entry=false;bm221.loc=null;bm221.clean=false;bm221.charge=false;
+      }
+      S.depots.forEach(d=>{d.users=d.users||{};ROLES.forEach(x=>{if(!d.users[x[0]])d.users[x[0]]={u:d.id+"-"+x[0],p:rpw()}})});
+      save();return;
+    }
+  }catch(e){}
+  seed();
+  save();
+}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function logm(m,...ds){S.log.unshift({t:new Date().toLocaleString(),m,d:ds});S.log=S.log.slice(0,300)}
+function toast(m){const t=$("toast");t.textContent=m;t.classList.add("on");clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove("on"),2800)}
+function stats(d){
+  const c={n:0,entry:0,processing:0,ready:0,assigned:0,clean:0,charge:0};
+  const present=S.buses.filter(b=>b.loc===d&&b.entry);
+  const awaiting=S.buses.filter(b=>isAvailableForEntry(b,d));
+  c.entry=awaiting.length;
+  c.n=present.length+awaiting.length;
+  present.forEach(b=>{
+    c[stage(b)]++;
+    if(!b.clean)c.clean++;
+    if(!b.charge)c.charge++;
+  });
+  return c;
+}
+const curD=()=>auth.role==="admin"?(dep(ui.depot)?ui.depot:(S.depots[0]||{}).id):auth.depot;
+
+/* ---------- actions ---------- */
+function act(id,type){
+  load();
+  const b=S.buses.find(x=>x.id===id);if(!b)return toast("Bus "+id+" not found");
+  const d=curD();
+  if(['entry','clean','charge','assign'].includes(type)){
+    try{if(JSON.parse(localStorage.getItem('smart_fleet_issues')||'[]').some(i=>i.busId===id&&!i.resolvedAt))return toast('Bus has a reported problem. Ask the depot manager to resolve it first.');}
+    catch(e){return toast('Could not check reported problems. Refresh before approving.');}
+  }
+  if(auth.role!=="admin"){
+    if(type==="entry"){
+      const linked=b.linkedDepots&&b.linkedDepots.length?b.linkedDepots:[b.home||b.loc].filter(Boolean);
+      if(!linked.includes(d))return toast("Bus "+b.id+" is not authorized for entry at "+dn(d));
+    }else{
+      if(b.loc!==d)return toast("You can only manage buses physically located at your depot");
+    }
+  }
+
+  if(type==="entry"){
+    if(b.entry){
+      if(b.loc===d) return toast("Bus "+id+" is already marked as entered at this depot.");
+      return toast("Concurrent Entry Blocked: Bus "+b.id+" ("+b.reg+") is ALREADY entered at "+dn(b.loc)+"!");
+    }
+    if(b.transferTo&&b.transferTo!==d){
+      return toast("Entry Blocked: Bus "+b.id+" is currently in transit to "+dn(b.transferTo)+"!");
+    }
+    if(b.maintenance){
+      return toast("Entry Blocked: Bus "+b.id+" is currently under maintenance!");
+    }
+    b.entry=true;
+    b.loc=d;
+    b.entryDepot=d;
+    b.entryAt=new Date().toISOString();
+    b.transferTo=null;
+    b.transferFrom=null;
+    b.transferStatus=null;
+    const msg=id+" ("+b.reg+") recorded & entered at "+dn(d)+", forwarded to Cleaner + Charging";
+    logm(msg,d);save();render();toast(msg);return;
+  }
+
+  if(type==="unentry"){
+    b.entry=b.clean=b.charge=false;
+    b.route=b.driver="";
+    const linked=b.linkedDepots||[b.home||b.loc].filter(Boolean);
+    if(linked.length>1)b.loc=null;
+    b.entryDepot=null;b.entryAt=null;
+    const msg=id+" entry reverted at "+dn(d);
+    logm(msg,d);save();render();toast(msg);return;
+  }
+
+  const M={
+    clean:()=>{b.clean=true;return id+" cleaning approved"},
+    unclean:()=>{b.clean=false;b.route=b.driver="";return id+" cleaning reverted"},
+    charge:()=>{b.charge=true;return id+" charging approved"},
+    uncharge:()=>{b.charge=false;b.route=b.driver="";return id+" charging reverted"},
+    assign:()=>{const r=$("r_"+id).value,dv=$("d_"+id).value;if(!r||!dv){toast("Choose route and driver");return null}b.route=r;b.driver=dv;return id+" assigned to "+r+" with "+dv},
+    unassign:()=>{const m=id+" unassigned from "+b.route;b.route=b.driver="";return m}
+  };
+  const m=M[type]();if(!m)return;logm(m,d);
+  if((type==="clean"||type==="charge")&&stage(b)==="ready")logm(id+" moved to Scheduler ready pool",d);
+  save();render();
+}
+function recordEntry(busId,depotId=curD()){ui.depot=depotId;return act(busId,"entry")}
+function departBus(busId,destinationId){return tx(busId,destinationId)}
+function confirmArrival(busId,depotId=curD()){const bus=S.buses.find(b=>b.id===busId);if(!bus||bus.transferTo!==depotId)return toast("Arrival is only available at the assigned destination depot");ui.depot=depotId;return act(busId,"entry")}
+function tx(id,to){
+  load();
+  const b=S.buses.find(x=>x.id===id);if(!b||!to||!dep(to))return toast("Choose a destination depot");
+  if(auth.role!=="admin"&&b.loc!==auth.depot)return toast("You can only transfer buses from your depot");
+  const from=b.loc;if(from===to)return toast("Bus is already at that depot");
+  
+  b.loc=null; // Departs current depot
+  b.entry=b.clean=b.charge=false;
+  b.route=b.driver="";
+  b.transferFrom=from;
+  b.transferTo=to;
+  b.transferStatus="in_transit";
+  if(!b.linkedDepots)b.linkedDepots=[from];
+  if(!b.linkedDepots.includes(to))b.linkedDepots.push(to);
+
+  logm(id+" departed "+dn(from)+" in transit → "+dn(to)+" (awaits confirmed Entry at "+dn(to)+")",from,to);
+  save();render();toast(id+" dispatched in transit to "+dn(to));
+}
+function txRow(id){tx(id,$("x_"+id).value)}
+function txForm(){const id=cid($("t_id").value),b=S.buses.find(x=>x.id.toLowerCase()===id.toLowerCase());if(!b)return toast("Bus code not found");tx(b.id,$("t_to").value)}
+function addDepot(){
+  if(auth.role!=="admin")return toast("Only the admin can create depots");
+  const name=$("f_name").value.trim();if(!name)return toast("Enter a depot name");
+  const n=Number($("f_count").value);if(!Number.isInteger(n)||n<1||n>500)return toast("Enter the number of buses (1–500)");
+  const city=$("f_city").value.trim()||name,lat=0,lon=0;
+  const d=mkDepot({name,city,lat,lon,routes:lines($("f_sched").value),drivers:lines($("f_drv").value)},rpw);
+  const parsed=parseBusRows($("f_buses").value,n,d.id);if(parsed.error)return toast(parsed.error);
+  
+  S.depots.push(d);
+  if(parsed.busesToAdd&&parsed.busesToAdd.length)S.buses.push(...parsed.busesToAdd);
+  if(parsed.busesToLink&&parsed.busesToLink.length){
+    parsed.busesToLink.forEach(item=>{
+      if(!item.bus.linkedDepots)item.bus.linkedDepots=[item.bus.home||item.bus.loc].filter(Boolean);
+      if(!item.bus.linkedDepots.includes(d.id))item.bus.linkedDepots.push(d.id);
+    });
+  }
+  logm("New depot added: "+d.name+" ("+d.city+") with "+n+" buses ("+parsed.busesToAdd.length+" new, "+parsed.busesToLink.length+" shared), "+d.routes.length+" schedules, "+d.drivers.length+" drivers",d.id);
+  save();ui={tab:"logins",depot:d.id,q:"",f:"pending"};render();toast("Depot added – 5 role logins generated");
+}
+function parseBusRows(text,expected,targetDepotId){
+  const rows=busLines(text);
+  if(rows.length!==expected)return {error:"Enter exactly "+expected+" bus lines; "+rows.length+" pasted."};
+  const targetId=targetDepotId||curD();
+  const busesToAdd=[],busesToLink=[],seenInBatch=new Set();
+  for(let i=0;i<rows.length;i++){
+    const parts=rows[i].split(",");
+    if(parts.length!==2)return {error:"Bus line "+(i+1)+" must be BUS CODE, REGISTRATION."};
+    const code=parts[0].trim(),reg=parts[1].trim(),safeCode=cid(code),safeReg=esc(reg);
+    if(!code||safeCode!==code||!reg)return {error:"Bus line "+(i+1)+" needs a valid bus code and registration."};
+    const codeLower=code.toLowerCase(),regLower=reg.toLowerCase();
+    
+    if(seenInBatch.has(codeLower)||seenInBatch.has(regLower)){
+      return {error:"Duplicate vehicle entry in current batch: "+code+" ("+reg+")"};
+    }
+    seenInBatch.add(codeLower);seenInBatch.add(regLower);
+    
+    const existingByCode=S.buses.find(b=>b.id.toLowerCase()===codeLower);
+    const existingByReg=S.buses.find(b=>b.reg.toLowerCase()===regLower);
+    
+    // Exact match: reuse existing physical vehicle identity across depots!
+    if(existingByCode&&existingByReg&&existingByCode.id===existingByReg.id){
+      const linked=existingByCode.linkedDepots||[existingByCode.home||existingByCode.loc].filter(Boolean);
+      if(linked.includes(targetId)){
+        return {error:"Duplicate Registration Prevented: Bus "+code+" ("+reg+") is already registered and linked to "+dn(targetId)+"."};
+      }
+      busesToLink.push({bus:existingByCode,depotId:targetId});
+      continue;
+    }
+    
+    // Conflict detection:
+    if(existingByCode&&(!existingByReg||existingByCode.id!==existingByReg.id)){
+      return {error:"Identity Conflict: Bus code "+code+" is already registered with registration "+existingByCode.reg+". Cannot assign to "+reg+"."};
+    }
+    if(existingByReg&&(!existingByCode||existingByCode.id!==existingByReg.id)){
+      return {error:"Duplicate Registration Prevented: Registration "+reg+" is already registered under bus code "+existingByReg.id+"."};
+    }
+    
+    // New physical bus
+    busesToAdd.push({
+      id:code,reg:safeReg,entry:false,clean:false,charge:false,route:"",driver:"",
+      home:targetId,loc:targetId,linkedDepots:[targetId],transferTo:null,transferFrom:null,transferStatus:null,
+      maintenance:false,entryDepot:null,entryAt:null
+    });
+  }
+  return {busesToAdd,busesToLink};
+}
+function addRes(kind){
+  const d=dep(curD());
+  if(kind==="b"){
+    const count=Number($("m_count").value);if(!Number.isInteger(count)||count<1||count>500)return toast("Enter the number of buses (1–500)");
+    const parsed=parseBusRows($("m_b").value,count,d.id);if(parsed.error)return toast(parsed.error);
+    let added=0,linked=0;
+    if(parsed.busesToAdd&&parsed.busesToAdd.length){S.buses.push(...parsed.busesToAdd);added=parsed.busesToAdd.length}
+    if(parsed.busesToLink&&parsed.busesToLink.length){
+      parsed.busesToLink.forEach(item=>{
+        if(!item.bus.linkedDepots)item.bus.linkedDepots=[item.bus.home||item.bus.loc].filter(Boolean);
+        if(!item.bus.linkedDepots.includes(d.id))item.bus.linkedDepots.push(d.id);
+      });
+      linked=parsed.busesToLink.length;
+    }
+    const msg=(added?added+" new bus(es) added. ":"")+(linked?linked+" existing shared bus(es) authorized for "+d.name+".":"");
+    logm(msg,d.id);toast(msg);
+  }
+  if(kind==="s"){const a=lines($("m_s").value).filter(x=>!d.routes.includes(x));d.routes.push(...a);logm(a.length+" schedules added to "+d.name,d.id);toast(a.length+" added")}
+  if(kind==="d"){const a=lines($("m_d").value).filter(x=>!d.drivers.includes(x));d.drivers.push(...a);logm(a.length+" drivers added to "+d.name,d.id);toast(a.length+" added")}
+  save();render();
+}
+function remRes(kind,i){
+  const d=dep(curD()),list=kind==="s"?d.routes:d.drivers,v=list[i],inUse=S.buses.filter(b=>b.loc===d.id).some(b=>(kind==="s"?b.route:b.driver)===v);
+  if(inUse)return toast("In use by an assigned bus – unassign it first");list.splice(i,1);logm((kind==="s"?"Schedule ":"Driver ")+v+" removed from "+d.name,d.id);save();render();
+}
+function regen(role){const d=dep(curD());if(!d||!d.users[role])return toast("Login not found");d.users[role].p=rpw();logm("Password regenerated for "+d.users[role].u,d.id);save();render();toast("New password generated")}
+function delDepot(){if(auth.role!=="admin")return toast("Only the admin can delete depots");const d=dep(curD());if(!confirm("Delete "+d.name+" and remove depot association?"))return;
+  S.buses.forEach(b=>{
+    if(b.linkedDepots)b.linkedDepots=b.linkedDepots.filter(x=>x!==d.id);
+    if(b.loc===d.id){b.loc=null;b.entry=false;b.route=b.driver="";}
+  });
+  S.depots=S.depots.filter(x=>x.id!==d.id);logm("Depot deleted: "+d.name);save();ui.tab="net";ui.depot="";render()}
+/* ---------- views ---------- */
+function rowsFor(tab){
+  const d=curD(),q=ui.q.trim().toLowerCase();
+  let r;
+  if(tab==="entry"){
+    r=S.buses.filter(b=>(b.loc===d&&b.entry)||isAvailableForEntry(b,d));
+  }else{
+    r=S.buses.filter(b=>b.loc===d&&b.entry);
+  }
+  if(q)r=r.filter(b=>b.id.toLowerCase().includes(q)||b.reg.toLowerCase().includes(q));
+  const f=(ok)=>x=>ui.f==="all"||(ui.f==="pending"?!ok(x):ok(x));
+  if(tab==="entry")r=r.filter(f(b=>b.entry));
+  if(tab==="clean")r=r.filter(f(b=>b.clean));
+  if(tab==="charge")r=r.filter(f(b=>b.charge));
+  if(tab==="sched")r=r.filter(b=>["ready","assigned"].includes(stage(b))).filter(f(b=>!!b.route));
+  return r;
+}
+function scannerStatus(message){
+  const status=$("scanStatus");
+  if(status)status.textContent=message;
+}
+function openScanner(){
+  $("scannerLayer").innerHTML=`<div class="scan-overlay" role="presentation" onclick="if(event.target===this)closeScanner()"><section class="scan-dialog" role="dialog" aria-modal="true" aria-labelledby="scanTitle">
+  <h2 id="scanTitle">Scan bus number plate</h2><p class="sub l">Position the plate clearly in view, then capture it. OCR runs in your browser; camera frames and selected photos stay on this device.</p>
+  <video id="scanVideo" autoplay muted playsinline aria-label="Live camera preview"></video>
+  <div class="scan-actions"><button id="capturePlateBtn" class="btn" onclick="scanPlate()" disabled>Capture &amp; scan</button><button id="retryCameraBtn" class="ghost" onclick="requestScannerCamera()" hidden>Retry camera</button><label class="ghost" for="scanImageInput">Use phone camera or choose photo</label><input id="scanImageInput" type="file" accept="image/*" capture="environment" hidden onchange="scanPlateImage(this.files?.[0])"><button class="ghost" onclick="closeScanner()">Cancel</button></div>
+  <div id="scanStatus" class="scan-status" role="status" aria-live="polite">Requesting camera access…</div>
+  <label for="scanText">Detected text (edit if needed)</label><textarea id="scanText" class="scan-result" placeholder="Scanned plate text will appear here"></textarea>
+  <button class="ghost" style="margin-top:8px" onclick="matchScannedText()">Match plate to bus</button><div id="scanCandidates" class="scan-candidates"></div>
+  </section></div>`;
+  requestScannerCamera();
+}
+function requestScannerCamera(){
+  const retryButton=$("retryCameraBtn");
+  if(!window.isSecureContext||!navigator.mediaDevices?.getUserMedia){
+    scannerStatus("Live camera access requires HTTPS or localhost. Use your phone camera/photo above instead.");
+    return;
+  }
+  if(retryButton)retryButton.disabled=true;
+  navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"},width:{ideal:1280},height:{ideal:720}},audio:false})
+    .then(stream=>{
+      if(!$("scanVideo")){stream.getTracks().forEach(track=>track.stop());return}
+      scanStream=stream;
+      const video=$("scanVideo");video.srcObject=stream;
+      return video.play().then(()=>{
+        if($("capturePlateBtn"))$("capturePlateBtn").disabled=false;
+        if(retryButton)retryButton.hidden=true;
+        scannerStatus("Camera ready. Center the plate and capture it.");
+      });
+    })
+    .catch(error=>{
+      if(retryButton){retryButton.hidden=false;retryButton.disabled=false}
+      const reason=error.name==="NotAllowedError"?"Camera permission was blocked. Close any floating bubbles or overlays and try again, or use your phone camera/photo above.":error.name==="NotFoundError"?"No camera was found on this device. Use your phone camera/photo above instead.":error.name==="NotReadableError"?"The camera is busy in another app. Close it and try again, or use your phone camera/photo above.":"Could not start the camera: "+error.message+" You can use your phone camera/photo above.";
+      scannerStatus(reason);
+    });
+}
+function closeScanner(){
+  if(scanStream){scanStream.getTracks().forEach(track=>track.stop());scanStream=null}
+  const video=$("scanVideo");if(video)video.srcObject=null;
+  $("scannerLayer").innerHTML="";
+}
+function loadOcr(){
+  if(window.Tesseract)return Promise.resolve(window.Tesseract);
+  if(ocrPromise)return ocrPromise;
+  ocrPromise=new Promise((resolve,reject)=>{
+    const script=document.createElement("script");
+    script.src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js";
+    script.onload=()=>window.Tesseract?resolve(window.Tesseract):reject(new Error("OCR library loaded without its API."));
+    script.onerror=()=>reject(new Error("Could not download the OCR library. Check your internet connection and try again."));
+    document.head.appendChild(script);
+  }).catch(error=>{ocrPromise=null;throw error});
+  return ocrPromise;
+}
+async function getScanWorker(){
+  if(scanWorker)return scanWorker;
+  const Tesseract=await loadOcr();
+  scanWorker=await Tesseract.createWorker("eng",1,{logger:message=>{
+    if(message.status==="recognizing text")scannerStatus("Reading plate… "+Math.round((message.progress||0)*100)+"%");
+    else if(message.status==="loading language model")scannerStatus("Loading English OCR model…");
+  }});
+  return scanWorker;
+}
+async function recognizePlate(image,button){
+  if(button)button.disabled=true;
+  try{
+    scannerStatus("Preparing OCR…");
+    const worker=await getScanWorker(),result=await worker.recognize(image);
+    const text=$("scanText");
+    if(text){text.value=result.data.text.trim();matchScannedText()}
+  }catch(error){
+    scannerStatus("Plate scan failed: "+error.message);
+  }finally{
+    if(button&&button.isConnected)button.disabled=false;
+  }
+}
+async function scanPlate(){
+  const video=$("scanVideo");
+  if(!video||!video.videoWidth)return scannerStatus("Camera is not ready yet.");
+  const canvas=document.createElement("canvas");canvas.width=video.videoWidth;canvas.height=video.videoHeight;
+  canvas.getContext("2d").drawImage(video,0,0,canvas.width,canvas.height);
+  await recognizePlate(canvas,$("capturePlateBtn"));
+}
+async function scanPlateImage(file){
+  const input=$("scanImageInput");
+  if(!file)return;
+  if(input)input.value="";
+  await recognizePlate(file,input);
+}
+function plateCandidates(){
+  const d=curD();
+  if(ui.tab==="entry")return S.buses.filter(bus=>(bus.loc===d&&bus.entry)||isAvailableForEntry(bus,d));
+  return S.buses.filter(bus=>bus.loc===d&&bus.entry);
+}
+function matchScannedText(){
+  const text=$("scanText").value.toUpperCase().replace(/[^A-Z0-9]/g,"");
+  if(!text)return scannerStatus("No plate text detected. Capture again or enter the registration manually.");
+  const matches=plateCandidates().filter(bus=>text.includes(bus.reg.toUpperCase().replace(/[^A-Z0-9]/g,"")));
+  const list=$("scanCandidates");list.innerHTML="";
+  if(matches.length===1)return selectScannedBus(matches[0].id);
+  if(matches.length>1){
+    scannerStatus("Several buses matched. Choose the correct registration:");
+    list.innerHTML=matches.map(bus=>`<button class="ghost" data-bus-id="${esc(bus.id)}">${esc(bus.reg)} · ${esc(bus.id)}</button>`).join("");
+    list.querySelectorAll("[data-bus-id]").forEach(button=>button.addEventListener("click",()=>selectScannedBus(button.dataset.busId)));
+    return;
+  }
+  scannerStatus("No exact match in this depot’s "+({entry:"entry",clean:"cleaning",charge:"charging"}[ui.tab]||"current")+" queue. Review the detected text and try again.");
+}
+function selectScannedBus(id){
+  const bus=plateCandidates().find(item=>item.id===id);
+  if(!bus)return scannerStatus("That bus is no longer available in this queue. Scan again.");
+  closeScanner();ui.q=bus.reg;ui.f="all";ui.selectedBus=bus.id;render();
+  requestAnimationFrame(()=>document.getElementById("bus-"+bus.id)?.scrollIntoView({behavior:"smooth",block:"center"}));
+  toast("Selected bus "+bus.id+" · "+bus.reg);
+}
+const META={entry:["Depot Intake & Entry Recorder","Every bus arriving at this depot is recorded here. Approving forwards it to the Cleaner and Charging queues."],
+ clean:["Cleaning Bay Operations","Buses that passed the Entry Recorder await cleaning approval."],
+ charge:["Charging Infrastructure Operations","Buses that passed the Entry Recorder await charging approval. When BOTH Cleaner and Charging approve, the bus moves to the Scheduler."]};
+function homeTag(b){
+  let t="";
+  const linked=b.linkedDepots||[b.home||b.loc].filter(Boolean);
+  if(linked.length>1)t+=" "+tag("Shared ("+linked.length+" depots)","b");
+  else if(b.home&&b.loc&&b.home!==b.loc)t+=" "+tag("From "+esc(dn(b.home)),"b");
+  if(b.transferTo&&b.transferStatus==="in_transit")t+=" "+tag("In Transit → "+esc(dn(b.transferTo)),"w");
+  return t;
+}
+function kp(c){return `<div class="kpis"><div class="kpi"><b>${c.n}</b><span>Buses at depot</span></div><div class="kpi"><b>${c.entry}</b><span>Awaiting entry</span></div><div class="kpi"><b>${c.clean}</b><span>Pending cleaning</span></div><div class="kpi"><b>${c.charge}</b><span>Pending charging</span></div><div class="kpi"><b>${c.ready}</b><span>Ready pool</span></div><div class="kpi"><b>${c.assigned}</b><span>Assigned</span></div></div>`}
+function depOv(){
+  const d=dep(curD()),c=stats(d.id),n=c.n||1,pc=v=>(v/n*100).toFixed(1);
+  return `<div class="card"><h2>${esc(d.name)}</h2><p class="sub l">${esc(d.city)} · ${d.routes.length} schedules · ${d.drivers.length} drivers</p>${kp(c)}
+  <div class="bar"><div style="width:${pc(c.entry)}%;background:var(--blue)"></div><div style="width:${pc(c.processing)}%;background:var(--warn)"></div><div style="width:${pc(c.ready)}%;background:var(--ok)"></div><div style="width:${pc(c.assigned)}%;background:var(--slate)"></div></div>
+  <div class="legend"><span><i style="background:var(--blue)"></i>Entry pending</span><span><i style="background:var(--warn)"></i>In clean / charge</span><span><i style="background:var(--ok)"></i>Ready</span><span><i style="background:var(--slate)"></i>Assigned</span></div></div>
+  <div class="card"><h3>Buses at this depot</h3><div class="tools"><input id="q" placeholder="Search bus code or registration…" value="${esc(ui.q)}" oninput="ui.q=this.value;partial()"></div>${busTable(d.id)}</div>
+  <div class="card"><h3>Recent activity</h3>${logList(d.id,8)}</div>`;
+}
+function busTable(d){
+  const q=ui.q.trim().toLowerCase();
+  const r=S.buses.filter(b=>(b.loc===d&&b.entry)||isAvailableForEntry(b,d)).filter(b=>!q||b.id.toLowerCase().includes(q)||b.reg.toLowerCase().includes(q));
+  return `<div class="tw"><table><thead><tr><th>Bus code</th><th>Registration</th><th>Status / Location</th><th>Stage</th><th>Route / driver</th></tr></thead><tbody>${r.map(b=>{
+    const s=SN[stage(b)];
+    const locStatus=b.entry?tag("Present at "+esc(dn(b.loc)),"ok"):(b.transferTo===d?tag("Awaiting Arrival","w"):tag("Available for Entry","b"));
+    return `<tr><td><b>${b.id}</b>${homeTag(b)}</td><td>${b.reg}</td><td>${locStatus}</td><td>${tag(s[0],s[1])}</td><td>${b.route?esc(b.route)+" / "+esc(b.driver):"—"}</td></tr>`
+  }).join("")}</tbody></table></div>${r.length?"":'<div class="empty">No buses match.</div>'}<p class="sub l" style="margin-top:10px">${r.length} bus(es)</p>`;
+}
+function logList(d,n){const l=S.log.filter(x=>!d||x.d.includes(d)).slice(0,n);return `<ul class="log">${l.map(x=>`<li>${x.t} — ${esc(x.m)}</li>`).join("")||"<li>No activity yet.</li>"}</ul>`}
+function openDepot(id){ui.depot=id;go("ov")}
+function net(){
+  const ready=S.depots.reduce((n,d)=>n+stats(d.id).ready,0),inTransit=S.buses.filter(b=>b.transferStatus==="in_transit").length,maintenance=S.buses.filter(b=>b.maintenance).length,capacity=S.depots.reduce((n,d)=>n+S.buses.filter(b=>b.home===d.id).length,0);
+  const rows=S.depots.map(d=>{const c=stats(d.id);return `<tr><td><b>${esc(d.name)}</b></td><td>${esc(d.city)}</td><td>${c.n}</td><td>${c.entry}</td><td>${c.processing}</td><td>${c.ready}</td><td>${c.assigned}</td><td><button class="btn sm" onclick="openDepot('${d.id}')">Open</button></td></tr>`}).join("");
+  return `<div class="card"><div class="top"><div><h2>Fleet overview</h2><p class="sub l">Live network status · synchronized across depot consoles</p></div><span class="pill">${S.depots.length} depots online</span></div><div class="kpis"><div class="kpi"><b>${S.buses.length}</b><span>Active Fleet</span></div><div class="kpi"><b>${ready}</b><span>Ready Pool</span></div><div class="kpi"><b>${inTransit}</b><span>In Transit</span></div><div class="kpi"><b>${maintenance}</b><span>Maintenance Hold</span></div><div class="kpi"><b>${capacity}</b><span>Depot Capacity <small class="metric-note">registered home fleet</small></span></div></div></div>
+  <div class="card"><h2>Depot operations</h2><div class="tw"><table><thead><tr><th>Depot</th><th>City</th><th>Active</th><th>Entry queue</th><th>Processing</th><th>Ready</th><th>Assigned</th><th></th></tr></thead><tbody>${rows}</tbody></table></div></div>
+  ${locator()}`;
+}
+function locator(){return `<div class="card"><h3>Bus Locator</h3><p class="sub l">${auth.role==="admin"?"Search buses across all depots.":"Search buses assigned or authorized for your depot."}</p><div class="tools"><input id="lq" placeholder="e.g., BM221, KA51AH8184, KA-25-1234…" value="${esc(ui.xf)}" oninput="ui.xf=this.value;locRes()"></div><div id="locres">${locHtml()}</div></div>`}
+function locHtml(){
+  const q=ui.xf.trim().toLowerCase();if(!q)return '<div class="empty">Start typing to search every depot.</div>';
+  const r=S.buses.filter(b=>(auth.role==="admin"||(b.linkedDepots||[]).includes(auth.depot)||b.loc===auth.depot)&&(b.id.toLowerCase().includes(q)||b.reg.toLowerCase().includes(q))).slice(0,30);if(!r.length)return '<div class="empty">No bus found.</div>';
+  return `<div class="tw"><table><thead><tr><th>Bus code</th><th>Registration</th><th>Authorized Depots</th><th>Current Status / Location</th><th>Stage</th><th>Route / driver</th></tr></thead><tbody>${r.map(b=>{
+    const s=SN[stage(b)];
+    const linked=(b.linkedDepots||[b.home||b.loc].filter(Boolean)).map(x=>dn(x)).join(", ");
+    let locInfo=b.entry?`Present at ${esc(dn(b.loc))}`:(b.transferTo?`In Transit (${esc(dn(b.transferFrom))} → ${esc(dn(b.transferTo))})`:`Available for Entry across (${linked})`);
+    return `<tr><td><b>${b.id}</b>${homeTag(b)}</td><td>${b.reg}</td><td>${esc(linked)}</td><td>${esc(locInfo)}</td><td>${tag(s[0],s[1])}</td><td>${b.route?esc(b.route)+" / "+esc(b.driver):"—"}</td></tr>`
+  }).join("")}</tbody></table></div>`;
+}
+function locRes(){$("locres").innerHTML=locHtml()}
+function registryStatus(bus){if(bus.transferStatus==="in_transit")return "in_transit";if(bus.maintenance)return "maintenance";if(bus.entry&&stage(bus)==="ready")return "ready";if(bus.entry)return "processing";return "available"}
+function registryRows(){const q=ui.registryQ.trim().toLowerCase(),r=S.buses.filter(b=>{const depotOk=ui.registryDepot==="all"||(b.loc===ui.registryDepot)||(b.home===ui.registryDepot)||(b.linkedDepots||[]).includes(ui.registryDepot);return depotOk&&(!q||b.id.toLowerCase().includes(q)||b.reg.toLowerCase().includes(q))&&(ui.registryCat==="all"||b.cat===ui.registryCat)&&(ui.registryStatus==="all"||registryStatus(b)===ui.registryStatus);});return r.map(b=>{const st=registryStatus(b),label={in_transit:"In Transit",maintenance:"Maintenance",ready:"Ready",processing:"Processing",available:"Available"}[st],where=b.transferStatus==="in_transit"?dn(b.transferTo):(b.loc?dn(b.loc):"Network");return `<tr><td><b>${esc(b.id)}</b>${homeTag(b)}</td><td>${esc(b.reg)}</td><td><span class="tag cat-${String(b.cat||"B").toLowerCase()}">Cat ${esc(b.cat||"B")}</span></td><td>${esc(where)}</td><td>${tag(label,st==="ready"?"ok":st==="maintenance"||st==="in_transit"?"w":"b")}</td><td>${esc(b.route||"—")}</td><td><button class="btn sm s" onclick="editBus('${esc(b.id)}')">Edit</button></td></tr>`}).join("")||'<tr><td colspan="7"><div class="empty">No fleet records match these filters.</div></td></tr>'}
+function refreshRegistry(){const q=$("registryQ"),cat=$("registryCat"),depot=$("registryDepot"),status=$("registryStatus");if(q)ui.registryQ=q.value;if(cat)ui.registryCat=cat.value;if(depot)ui.registryDepot=depot.value;if(status)ui.registryStatus=status.value;const rows=$("registryRows");if(rows)rows.innerHTML=registryRows()}
+function fleetRegistry(){return `<div class="card"><div class="top"><div><h2>Fleet registry</h2><p class="sub l">Search and filter unique physical buses across the network.</p></div><span class="pill">${S.buses.length} vehicles</span></div><div class="registry-filters"><input id="registryQ" placeholder="Search bus code or registration" value="${esc(ui.registryQ)}" oninput="refreshRegistry()"><select id="registryCat" onchange="refreshRegistry()"><option value="all">All categories</option>${["A","B","C"].map(c=>`<option value="${c}"${ui.registryCat===c?" selected":""}>Category ${c}</option>`).join("")}</select><select id="registryDepot" onchange="refreshRegistry()"><option value="all">All depots</option>${S.depots.map(d=>`<option value="${d.id}"${ui.registryDepot===d.id?" selected":""}>${esc(d.name)}</option>`).join("")}</select><select id="registryStatus" onchange="refreshRegistry()"><option value="all">All statuses</option><option value="available"${ui.registryStatus==="available"?" selected":""}>Available</option><option value="processing"${ui.registryStatus==="processing"?" selected":""}>Processing</option><option value="ready"${ui.registryStatus==="ready"?" selected":""}>Ready</option><option value="in_transit"${ui.registryStatus==="in_transit"?" selected":""}>In Transit</option><option value="maintenance"${ui.registryStatus==="maintenance"?" selected":""}>Maintenance</option></select></div><div class="tw"><table><thead><tr><th>Bus code</th><th>Registration</th><th>Category</th><th>Location</th><th>Status</th><th>Route</th><th></th></tr></thead><tbody id="registryRows">${registryRows()}</tbody></table></div><p class="hint">Use Manage to register additional buses and edit depot schedules or drivers. Registration numbers must remain unique.</p></div>`}
+function editBus(id){const b=S.buses.find(x=>x.id===id);if(!b)return toast("Bus not found");const reg=prompt("Registration number",b.reg);if(reg===null)return;const category=prompt("Bus category (A, B or C)",b.cat||"B");if(category===null)return;const normalized=reg.trim().toUpperCase(),cat=category.trim().toUpperCase();if(!normalized||!/[A-C]/.test(cat)||!['A','B','C'].includes(cat))return toast("Enter a valid registration and category A, B or C");if(S.buses.some(x=>x!==b&&x.reg.toLowerCase()===normalized.toLowerCase()))return toast("Registration already belongs to another bus");b.reg=normalized;b.cat=cat;logm("Fleet record updated: "+b.id+" · "+normalized);save();render();}
+function addView(){
+  return `<div class="card f"><h2>Add a New Depot</h2><p class="sub l">Enter the depot details by hand. Buses, schedule codes and drivers entered here show up immediately, and logins for the depot are generated automatically.</p>
+  <div class="g2"><div><label>Depot name</label><input id="f_name" placeholder="e.g., Yeshwanthpur Depot"></div>
+  <div><label>City / location</label><input id="f_city" placeholder="e.g., Bengaluru"></div></div>
+  <div class="g2"><div><label>Number of buses <span class="hint">(required)</span></label><input id="f_count" type="number" min="1" max="500" step="1" placeholder="e.g., 40" oninput="cnt()"></div></div>
+  <label>Paste exact buses <span class="hint">(required) – one per line: BUS CODE, REGISTRATION. Existing physical buses with matching code &amp; registration will be safely linked to this depot without creating duplicates.</span></label><textarea id="f_buses" oninput="cnt()" placeholder="BM221, KA51AH8184&#10;BM222, KA51AH8221"></textarea><p class="hint" id="f_cnt">0 of 0 buses entered</p>
+  <div class="g2"><div><label>Schedule codes <span class="hint">– one per line</span></label><textarea id="f_sched" placeholder="SCH-101 Majestic&#10;SCH-102 Silk Board"></textarea></div><div><label>Driver names <span class="hint">– one per line</span></label><textarea id="f_drv" placeholder="Ramesh K&#10;Imran Pasha"></textarea></div></div>
+  <div class="tools"><button class="btn" onclick="addDepot()">Add depot &amp; generate logins</button></div></div>`;
+}
+function loginsView(){
+  const d=dep(curD());
+  return `<div class="card"><h2>Logins · ${esc(d.name)}</h2><p class="sub l">Each depot gets five separate logins: Entry Recorder, Cleaner, Charging Incharge, Scheduler and Depot Manager. The Depot Manager can manage this depot only.</p>
+  <div class="tw"><table><thead><tr><th>Role</th><th>User ID</th><th>Password</th><th></th></tr></thead><tbody>${ROLES.map(r=>`<tr><td>${r[1]}</td><td><code>${d.users[r[0]].u}</code></td><td><code>${d.users[r[0]].p}</code></td><td><button class="btn sm s" onclick="regen('${r[0]}')">Regenerate</button></td></tr>`).join("")}</tbody></table></div>
+  </div>`;
+}
+function linkBusAction(){
+  load();
+  const d=dep(curD());
+  const busId=$("link_bus_select")?.value;
+  if(!busId)return toast("Select a bus to link");
+  const b=S.buses.find(x=>x.id===busId);
+  if(!b)return toast("Bus not found");
+  if(!b.linkedDepots)b.linkedDepots=[b.home||b.loc].filter(Boolean);
+  if(b.linkedDepots.includes(d.id))return toast("Bus is already linked to "+d.name);
+  b.linkedDepots.push(d.id);
+  logm("Bus "+b.id+" ("+b.reg+") linked as shared bus to "+d.name,d.id);
+  save();render();toast("Bus "+b.id+" linked to "+d.name);
+}
+function unlinkBus(id,depotId){
+  load();
+  const b=S.buses.find(x=>x.id===id);
+  if(!b)return toast("Bus not found");
+  if(b.entry&&b.loc===depotId)return toast("Cannot unlink bus while it is physically present at this depot. Revert entry or transfer first.");
+  if(!b.linkedDepots)b.linkedDepots=[b.home||b.loc].filter(Boolean);
+  if(b.linkedDepots.length<=1)return toast("Cannot unlink the only authorized depot for this bus.");
+  b.linkedDepots=b.linkedDepots.filter(x=>x!==depotId);
+  if(b.home===depotId)b.home=b.linkedDepots[0];
+  logm("Bus "+b.id+" ("+b.reg+") unlinked from "+dn(depotId),depotId);
+  save();render();toast("Bus unlinked from "+dn(depotId));
+}
+function manage(){
+  const d=dep(curD()),others=S.depots.filter(x=>x.id!==d.id);
+  const chips=(l,k)=>`<div class="chips">${l.map((x,i)=>`<span class="chip">${esc(x)}<a onclick="remRes('${k}',${i})" title="Remove">×</a></span>`).join("")||'<span class="hint">None yet</span>'}</div>`;
+  
+  // Shared fleet options
+  const unlinkedFleet=S.buses.filter(b=>!(b.linkedDepots||[b.home||b.loc]).includes(d.id));
+  const linkedShared=S.buses.filter(b=>(b.linkedDepots||[b.home||b.loc]).includes(d.id)&&(b.linkedDepots||[]).length>1);
+
+  return `<div class="card f"><h2>Manage · ${esc(d.name)}</h2><p class="sub l">Add buses, schedule codes and drivers at any time. Changes appear in every view straight away.</p>
+  <div class="g2"><div><label>Number of buses</label><input id="m_count" type="number" min="1" max="500" step="1" oninput="cnt('m')" placeholder="e.g., 5"><label>Paste exact buses <span class="hint">BUS CODE, REGISTRATION per line</span></label><textarea id="m_b" oninput="cnt('m')"></textarea><p class="hint" id="m_cnt">0 of 0 buses entered</p><button class="btn sm" onclick="addRes('b')">Add buses</button></div>
+  <div><label>Add schedule codes</label><textarea id="m_s"></textarea><button class="btn sm" onclick="addRes('s')">Add schedules</button>${chips(d.routes,"s")}</div>
+  <div><label>Add drivers</label><textarea id="m_d"></textarea><button class="btn sm" onclick="addRes('d')">Add drivers</button>${chips(d.drivers,"d")}</div></div></div>
+  
+  <div class="card f"><h3>Cross-Depot Bus Sharing &amp; Authorization</h3>
+  <p class="sub l">Authorize an existing physical bus from the central fleet to operate into <b>${esc(d.name)}</b>. The central bus identity is preserved across all depots without duplicating records.</p>
+  <div class="g2">
+    <div>
+      <label>Link existing network bus to this depot</label>
+      <select id="link_bus_select">
+        <option value="">-- Choose bus to link --</option>
+        ${unlinkedFleet.map(b=>`<option value="${b.id}">${b.id} (${b.reg}) · Current home: ${dn(b.home||b.loc)}</option>`).join("")}
+      </select>
+      <button class="btn sm" style="margin-top:8px" onclick="linkBusAction()">Link bus to ${esc(d.name)}</button>
+    </div>
+    <div>
+      <label>Currently shared buses linked to ${esc(d.name)} (${linkedShared.length})</label>
+      <div class="tw" style="max-height:220px;overflow-y:auto">
+        <table><thead><tr><th>Bus</th><th>Registration</th><th>Linked Depots</th><th>Present</th><th></th></tr></thead>
+        <tbody>
+          ${linkedShared.map(b=>`<tr>
+            <td><b>${b.id}</b></td><td>${b.reg}</td>
+            <td><small>${(b.linkedDepots||[]).map(x=>dn(x)).join(", ")}</small></td>
+            <td>${b.entry?tag(dn(b.loc),"ok"):tag("Available for entry","b")}</td>
+            <td>${b.entry&&b.loc===d.id?`<small class="hint">Present</small>`:`<button class="btn sm out" onclick="unlinkBus('${b.id}','${d.id}')">Unlink</button>`}</td>
+          </tr>`).join("")}
+        </tbody></table>
+        ${linkedShared.length?"":'<div class="empty">No shared buses currently linked.</div>'}
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="card f"><h3>Transfer a bus to another depot</h3><div class="g2"><div><label>Bus code (currently at ${esc(d.name)})</label><input id="t_id" placeholder="e.g., BM221"></div><div><label>Destination depot</label><select id="t_to">${others.map(o=>`<option value="${o.id}">${esc(o.name)}</option>`).join("")}</select></div></div>
+  <p class="hint">The bus departs and moves into In-Transit state. It becomes available for entry ONLY at the destination depot upon arrival.</p><button class="btn" onclick="txForm()">Transfer bus</button></div>
+  ${auth.role==="admin"?'<div class="card"><h3>Danger zone</h3><button class="btn out" onclick="delDepot()">Delete this depot</button></div>':""}`;
+}
+function logView(){return `<div class="card"><h2>Activity Log</h2><p class="sub l">${auth.role==="admin"?"All depots":esc(dn(auth.depot))}</p>${logList(auth.role==="admin"?"":auth.depot,300)}</div>`}
+
+/* ---------- shell ---------- */
+function tabsFor(){return [["net","Network"],["ov","Depot Overview"],["registry","Fleet Registry"],["add","Add Depot"],["manage","Manage"],["logins","Depot Logins"],["log","Activity"]]}
+function go(t){ui.tab=t;ui.q="";ui.f=t==="log"?"all":"pending";ui.selectedBus="";render()}
+function partial(){const q=$("q"),pos=q.selectionStart;render();const n=$("q");if(n){n.focus();n.setSelectionRange(pos,pos)}}
+function isDark(){const t=document.documentElement.dataset.theme;return t?t==="dark":matchMedia("(prefers-color-scheme:dark)").matches}
+function signOut(){if(window.parent&&window.parent!==window){window.parent.postMessage({type:"sfr:logout"},window.location.origin);return}window.location.href="index.html"}
+function theme(){document.documentElement.dataset.theme=isDark()?"light":"dark";localStorage.setItem("fleet_theme",document.documentElement.dataset.theme);if(window.parent&&window.parent!==window)window.parent.postMessage({type:"sfr:theme",value:document.documentElement.dataset.theme},window.location.origin);render()}
+const thBtn=()=>`<button class="ghost" onclick="theme()">${isDark()?"☀️ Light mode":"🌙 Dark mode"}</button>`;
+function cnt(prefix="f"){const n=Number($(prefix+"_count").value)||0,k=busLines($(prefix==="f"?"f_buses":"m_b").value).length;$(prefix+"_cnt").textContent=k+" of "+n+" buses entered"+(n&&k===n?" ✓":"")}
+function render(){
+  const t=ui.tab,view=t==="net"?net():t==="add"?addView():t==="ov"?depOv():t==="manage"?manage():t==="logins"?loginsView():t==="registry"?fleetRegistry():t==="log"?logView():net();
+  const active=["net","ov","registry","add","manage","logins","log"].includes(t)?t:"net";
+  const top=`<header class="top"><div class="pill">Admin Console</div>${thBtn()}</header>`;
+  const sidebar=`<aside class="sidebar"><span class="pill">${S.depots.length} depots · ${S.buses.length} buses</span>${S.depots.length?`<select class="inl" onchange="ui.depot=this.value;render()" aria-label="Selected depot">${S.depots.map(d=>`<option value="${d.id}"${d.id===curD()?" selected":""}>${esc(d.name)}</option>`).join("")}</select>`:""}<nav class="side-nav" aria-label="Admin navigation">${tabsFor().map(x=>`<button class="nav-item${active===x[0]?" on":""}"${active===x[0]?" aria-current=page":""} onclick="go('${x[0]}')">${x[1]}</button>`).join("")}</nav><button class="nav-item logout-item" onclick="signOut()">Sign out</button></aside>`;
+  $("app").innerHTML=`${top}<div class="layout">${sidebar}<main class="main-content"><h1>Smart Fleet Operations</h1><p class="sub">Central network management · live multi-depot state</p>${view}</main></div>`;
+}
+window.addEventListener("storage", e => {
+  if(e.key === KEY){
+    load();
+    render();
+  }
+});
+if(localStorage.getItem("fleet_theme")==="dark")document.documentElement.dataset.theme="dark";load();render();
+</script></body></html>

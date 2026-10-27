@@ -1,0 +1,38 @@
+{
+  "name": "smart-fleet-os",
+  "version": "1.1.0",
+  "description": "Smart Depot Dispatch & Fleet Routing OS for Electric Bus Fleets",
+  "main": "index.html",
+  "scripts": {
+    "test": "node test_cross_depot_sync.js && node test_auto_assignment.js",
+    "test:sync": "node test_cross_depot_sync.js",
+    "test:assignment": "node test_auto_assignment.js",
+    "test:ui": "node test_role_ui.js",
+    "build": "node scripts/build-web.js",
+    "android:build": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-android.ps1",
+    "server": "node server/server.js",
+    "test:server": "node test_server.js",
+    "test:postgres": "node test_postgres.js",
+    "test:remote": "node test_remote.js"
+  },
+  "keywords": [
+    "smart-fleet",
+    "transit",
+    "dispatch",
+    "ev",
+    "electric-bus",
+    "depot-management"
+  ],
+  "author": "Switch Mobility / City Transit Operations",
+  "license": "ISC",
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.5.12",
+    "playwright": "^1.62.1"
+  },
+  "engines": {
+    "node": "24.x"
+  },
+  "dependencies": {
+    "pg": "^8.23.1"
+  }
+}

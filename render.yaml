@@ -1,0 +1,23 @@
+# Free API service only. Persistent storage is an external Neon Free database.
+services:
+  - type: web
+    name: smart-fleet-depot-trial
+    runtime: node
+    plan: free
+    region: singapore
+    branch: codex/render-neon-trial
+    autoDeployTrigger: 'off'
+    buildCommand: npm ci --omit=dev
+    startCommand: node server/server.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: '24'
+      - key: FLEET_HOST
+        value: 0.0.0.0
+      - key: FLEET_REQUIRE_POSTGRES
+        value: 'true'
+      - key: DATABASE_URL
+        sync: false
+      - key: FLEET_ADMIN_PASSWORD
+        sync: false
