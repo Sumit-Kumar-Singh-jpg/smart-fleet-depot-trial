@@ -2,18 +2,9 @@ plugins { id 'com.android.application' }
 android {
     namespace 'in.smartfleet.depot'
     compileSdk 36
-    defaultConfig { applicationId 'in.smartfleet.depot'; minSdk 26; targetSdk 36; versionCode 3; versionName '1.1.1'; buildConfigField 'String', 'SERVER_URL', '"https://smart-fleet-depot-trial.onrender.com"' }
+    defaultConfig { applicationId 'in.smartfleet.depot'; minSdk 26; targetSdk 36; versionCode 4; versionName '1.2.0'; resValue 'string', 'app_name', 'Smart Fleet OS'; buildConfigField 'String', 'WORK_ROLE', '""'; buildConfigField 'String', 'SERVER_URL', '"https://smart-fleet-depot-trial.onrender.com"' }
     buildFeatures { buildConfig true }
     compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
-    flavorDimensions += 'work'
-    productFlavors {
-        entry { dimension 'work'; applicationIdSuffix '.entry'; resValue 'string', 'app_name', 'Fleet Entry'; buildConfigField 'String','WORK_ROLE','"entry"' }
-        cleaner { dimension 'work'; applicationIdSuffix '.cleaner'; resValue 'string', 'app_name', 'Fleet Cleaning'; buildConfigField 'String','WORK_ROLE','"cleaner"' }
-        charging { dimension 'work'; applicationIdSuffix '.charging'; resValue 'string', 'app_name', 'Fleet Charging'; buildConfigField 'String','WORK_ROLE','"charging"' }
-        scheduler { dimension 'work'; applicationIdSuffix '.scheduler'; resValue 'string', 'app_name', 'Fleet Scheduler'; buildConfigField 'String','WORK_ROLE','"scheduler"' }
-        manager { dimension 'work'; applicationIdSuffix '.manager'; resValue 'string', 'app_name', 'Fleet Manager'; buildConfigField 'String','WORK_ROLE','"manager"' }
-        admin { dimension 'work'; applicationIdSuffix '.admin'; resValue 'string', 'app_name', 'Fleet Admin'; buildConfigField 'String','WORK_ROLE','"admin"' }
-    }
     buildTypes { release { minifyEnabled false } }
     sourceSets.main.assets.srcDirs = ['../../dist']
 }

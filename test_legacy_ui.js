@@ -9,8 +9,8 @@ const fs=require('node:fs'),path=require('node:path'),os=require('node:os'),asse
  const check=(ok,label)=>{assert.ok(ok,label);checks++;console.log('PASS '+label);};
  async function open(role){
   const context=await browser.newContext({viewport:{width:390,height:844}});
-  await context.addInitScript(({base,role})=>{window.FleetAndroid={role:()=>role,serverURL:()=>base,configureServer(){}};},{base,role});
-  const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));await page.goto(base+'/index.html?app='+role);
+  await context.addInitScript(({base,role})=>{window.FleetAndroid={role:()=>'',serverURL:()=>base,configureServer(){}};},{base,role});
+  const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));await page.goto(base+'/index.html');
   const account=accounts.find(a=>a.role===role);await page.locator('#user').fill(account.username);await page.locator('#pass').fill(account.password);await page.locator('#loginForm button.primary').click();
   await page.locator('iframe').waitFor();const frame=await page.locator('iframe').elementHandle().then(el=>el.contentFrame());
   await frame.waitForFunction(()=>Boolean(window.FleetRemote?.ready));return {page,frame,context};
@@ -38,7 +38,22 @@ const fs=require('node:fs'),path=require('node:path'),os=require('node:os'),asse
   await scheduler.frame.locator('.logout-btn').click();await scheduler.page.locator('#loginForm').waitFor();
   const manager=await open('manager');check(await manager.frame.evaluate(()=>FleetDB.Scheduler.getAssignments().some(b=>b.busId==='BM273')),'Logout still preserves bus assignments');
   await manager.frame.locator('[data-return="BM273"]').click();await manager.frame.locator('#return-save').click();await manager.frame.waitForFunction(()=>!FleetDB.Scheduler.getAssignments().some(b=>b.busId==='BM273'));
-  const admin=await open('admin');check(await admin.frame.locator('#users').innerText().then(t=>t.includes('chandapura-entry')),'Connected admin account management retained');
+  const admin=await open('admin');await admin.frame.locator('.side-nav').waitFor();
+  check(await admin.frame.locator('.nav-item').count()===8,'Repository Admin dashboard navigation restored');
+  await admin.frame.getByRole('button',{name:'Depot Logins',exact:true}).click();
+  check(await admin.frame.locator('.main-content').innerText().then(t=>t.includes('chandapura-entry')),'Admin dashboard lists actual server accounts');
+  await admin.frame.locator('.logout-item').click();await admin.page.locator('#loginForm').waitFor();
+  for(const role of ['entry','cleaner','charging','scheduler','manager','admin']){
+    const account=accounts.find(a=>a.role===role);
+    await admin.page.locator('#user').fill(account.username);await admin.page.locator('#pass').fill(account.password);await admin.page.locator('#loginForm button.primary').click();
+    await admin.page.waitForFunction(role=>JSON.parse(sessionStorage.getItem('fleet_session')||'null')?.id===role,role);
+    const consoleFrame=await admin.page.locator('iframe').elementHandle().then(el=>el.contentFrame());
+    await consoleFrame.waitForFunction(()=>Boolean(window.FleetRemote?.ready));
+    // Use the real child logout to end both parent and iframe sessions.
+    await consoleFrame.evaluate(async()=>{if(typeof signOut==='function')await signOut();else if(typeof schedulerLogout==='function')await schedulerLogout();else if(typeof goToLogin==='function')await goToLogin();else document.getElementById('signout').click();});
+    await admin.page.locator('#loginForm').waitFor();
+  }
+  check(true,'One unrestricted app signs in and signs out across all six roles');
   await cleaner.page.locator('#fleet-language').selectOption('kn');await cleaner.frame.waitForFunction(()=>document.documentElement.lang==='kn');
   check(await cleaner.frame.locator('#submit-btn').innerText()==='ಸಲ್ಲಿಸಿ','Language support works inside restored console');
   check(await entry.page.evaluate(()=>getComputedStyle(document.querySelector('.login')||document.body).fontFamily.includes('Inter')),'Original font family retained');

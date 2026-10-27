@@ -1,6 +1,6 @@
 {
   "name": "smart-fleet-os",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "Smart Depot Dispatch & Fleet Routing OS for Electric Bus Fleets",
   "main": "index.html",
   "scripts": {

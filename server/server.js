@@ -1,6 +1,7 @@
 'use strict';
 const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),crypto=require('node:crypto');
 const {openStorage}=require('./storage');
+const {prepareNetwork,syncRoleRecords}=require('./admin-network');
 const ROOT=path.resolve(__dirname,'..');
 const ROLE_DB={entry:'EntryRecorder',cleaner:'Cleaner',charging:'Charging'};
 const STATE_KEYS=['sfos_multi_v2','smart_fleet_db_entry_recorder','smart_fleet_db_cleaner','smart_fleet_db_charging','smart_fleet_db_scheduler','smart_fleet_issues'];
@@ -113,11 +114,34 @@ async function makeServer(options={}){
           });
           return respond(res,200,{ok:true,...(await snapshot(user)),...(replayed?{replayed:true}:{})});
         }
+        if(url.pathname==='/api/admin/network'&&req.method==='POST'&&user.role==='admin'){
+          const body=await readBody(req);
+          await db.transaction(async tx=>{
+            const current=await getState(tx,true);
+            if(body.revision!==current.revision)fail('Depot data changed. Refresh and try again.',409);
+            const store=JSON.parse(current.body),previous=JSON.parse(store.sfos_multi_v2);
+            const change=prepareNetwork(body.network,previous);
+            const admins=await tx.prepare("SELECT depot FROM users WHERE role='admin'").all();
+            if(admins.some(a=>change.removedDepots.includes(a.depot)))fail('Move admin accounts to another depot before deleting this depot');
+            for(const account of change.accounts){
+              if(await tx.prepare('SELECT username FROM users WHERE username=?').get(account.username))fail('A generated username already exists');
+              await tx.prepare('INSERT INTO users VALUES (?,?,?,?)').run(account.username,passwordHash(account.password),account.role,account.depot);
+            }
+            for(const depot of change.removedDepots){
+              await tx.prepare('DELETE FROM sessions WHERE username IN (SELECT username FROM users WHERE depot=?)').run(depot);
+              await tx.prepare('DELETE FROM users WHERE depot=?').run(depot);
+            }
+            syncRoleRecords(store,change.network,change.reset);
+            store.sfos_multi_v2=JSON.stringify(change.network);
+            await tx.prepare('UPDATE state SET body=?,revision=revision+1 WHERE id=1').run(JSON.stringify(store));
+          });
+          return respond(res,200,{ok:true,...await snapshot(user)});
+        }
         if(url.pathname==='/api/admin/users'&&user.role==='admin'){
           if(req.method==='GET')return respond(res,200,{users:await db.prepare('SELECT username,role,depot FROM users ORDER BY username').all()});
           if(req.method==='POST'){
             const body=await readBody(req),username=String(body.username||'').trim().toLowerCase(),role=body.role,depot=body.depot||'chandapura';
-            if(!/^[a-z0-9_-]{3,60}$/.test(username)||!['entry','cleaner','charging','scheduler','manager','admin'].includes(role)||String(body.password||'').length<10)fail('Use a valid username and a password of at least 10 characters');
+            if(!/^[a-z0-9_-]{3,60}$/.test(username)||!['entry','cleaner','charging','scheduler','manager','admin'].includes(role)||String(body.password||'').length<8||String(body.password||'').length>200)fail('Use a valid username and a password of 8 to 200 characters');
             if(!JSON.parse(JSON.parse((await getState()).body).sfos_multi_v2).depots.some(d=>d.id===depot))fail('Unknown depot');
             if(username===user.username&&(role!=='admin'||depot!==user.depot))fail('You cannot remove your own admin access');
             await db.transaction(async tx=>{await tx.prepare('INSERT INTO users VALUES (?,?,?,?) ON CONFLICT(username) DO UPDATE SET password=excluded.password,role=excluded.role,depot=excluded.depot').run(username,passwordHash(body.password),role,depot);await tx.prepare('DELETE FROM sessions WHERE username=?').run(username);});return respond(res,200,{ok:true});
@@ -127,7 +151,7 @@ async function makeServer(options={}){
       }
       if(!['GET','HEAD'].includes(req.method))fail('Method not allowed',405);
       const relative=url.pathname==='/'?'index.html':decodeURIComponent(url.pathname).replace(/^\//,'');
-      if(!(/^(index|entry_recorder|cleaner|charging|scheduler|manager|mobile_admin)\.html$/.test(relative)||/^src\/(js\/[\w-]+\.js|css\/[\w-]+\.css|data\/app_data\.js)$/.test(relative)||/^assets\/[\w/.-]+\.(png|svg)$/.test(relative)))fail('Not found',404);
+      if(!(/^(index|entry_recorder|cleaner|charging|scheduler|manager|admin|mobile_admin)\.html$/.test(relative)||/^src\/(js\/[\w-]+\.js|css\/[\w-]+\.css|data\/app_data\.js)$/.test(relative)||/^assets\/[\w/.-]+\.(png|svg)$/.test(relative)))fail('Not found',404);
       const filename=path.resolve(ROOT,relative);if(!filename.startsWith(ROOT+path.sep))fail('Not found',404);
       const mime={'.html':'text/html','.js':'application/javascript','.css':'text/css','.png':'image/png','.svg':'image/svg+xml'}[path.extname(filename)]||'text/plain';
       res.writeHead(200,{'Content-Type':mime+'; charset=utf-8','Cache-Control':'no-cache'});let content=fs.readFileSync(filename);if(path.extname(filename)==='.html')content=content.toString('utf8').replace('<head>','<head><meta name="fleet-api" content="same-origin">');res.end(req.method==='HEAD'?'':content);

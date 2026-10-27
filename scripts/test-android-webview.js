@@ -4,12 +4,12 @@ const adb=process.env.ADB_PATH||process.env.LOCALAPPDATA+'\\Android\\Sdk\\platfo
 const serial=process.env.ANDROID_SERIAL||'emulator-5580',port=9225;
 const live=process.argv.includes('--live');
 const selectedRoles=process.argv.slice(2).filter(arg=>arg!=='--live');
-const roles=selectedRoles.length?selectedRoles:['entry'];
+const roles=selectedRoles.length?selectedRoles:['entry','cleaner','charging','scheduler','manager','admin'];
 const command=(...args)=>execFileSync(adb,['-s',serial,...args],{encoding:'utf8'}).trim();
 const pause=ms=>new Promise(r=>setTimeout(r,ms));
 async function connect(role){
  const attachPort=port+['entry','cleaner','charging','scheduler','manager','admin'].indexOf(role);
- const pid=command('shell','pidof','in.smartfleet.depot.'+role);
+ const pid=command('shell','pidof','in.smartfleet.depot');
  command('forward','tcp:'+attachPort,'localabstract:webview_devtools_remote_'+pid);
  let pages;for(let i=0;i<30;i++){try{pages=await(await fetch('http://127.0.0.1:'+attachPort+'/json',{headers:{Connection:'close'}})).json();if(pages.length)break;}catch(_){}await pause(300);}
  if(!pages?.length)throw new Error('Android debug WebView not found');
@@ -22,12 +22,15 @@ async function wait(client,expression){for(let i=0;i<60;i++){if(await client.eva
 (async()=>{
  const saved=JSON.parse(fs.readFileSync(live?'server/data/cloud-trial-access.json':'server/data/initial-access.json','utf8'));
  const accounts=live?[{...saved.admin,role:'admin'},...saved.staff]:saved.accounts;
+ command('install','-r','apk/SmartFleet.apk');
  for(const role of roles){
   console.log('Checking Android '+role+'…');
-  command('install','-r','apk/app-'+role+'-debug.apk');command('shell','am','force-stop','in.smartfleet.depot.'+role);command('shell','am','start','-n','in.smartfleet.depot.'+role+'/in.smartfleet.depot.MainActivity');await pause(800);
+  command('shell','am','force-stop','in.smartfleet.depot');command('shell','am','start','-n','in.smartfleet.depot/in.smartfleet.depot.MainActivity');await pause(800);
   const client=await connect(role);
   try{
    await wait(client,"Boolean(document.getElementById('loginForm'))");
+   if(await client.evaluate('FleetAndroid.role()')!=='')throw new Error('App still restricts login to one role');
+   await client.evaluate("FleetI18n.setLanguage('en')");
    if(!await client.evaluate('Boolean(FleetAndroid.serverURL())')){
     await client.evaluate('FleetAndroid.configureServer()');await pause(300);
     // Inspect the native dialog before each tap (its bounds change with the keyboard).
@@ -38,6 +41,7 @@ async function wait(client,expression){for(let i=0;i<60;i++){if(await client.eva
    await client.evaluate(`document.getElementById('user').value=${JSON.stringify(account.username)};document.getElementById('pass').value=${JSON.stringify(account.password)};setTimeout(()=>document.getElementById('loginForm').dispatchEvent(new Event('submit',{cancelable:true})),50);true;`);
    await wait(client,"Boolean(document.querySelector('iframe')?.contentDocument?.querySelector('h1'))");
    await wait(client,"Boolean(document.querySelector('iframe')?.contentWindow?.FleetRemote?.ready)");
+   if(role==='admin')await wait(client,"Boolean(document.querySelector('iframe')?.contentDocument?.querySelector('.side-nav'))");
    await client.evaluate("FleetI18n.setLanguage('kn')");await pause(200);
    const title=await client.evaluate("document.querySelector('iframe')?.contentDocument?.querySelector('h1')?.textContent");if(!title||/^(Bus entry|Cleaning|Charging|Depot manager)$/.test(title))throw new Error('Kannada title missing');
    if(!await client.evaluate('document.documentElement.scrollWidth<=innerWidth'))throw new Error('Android horizontal overflow');

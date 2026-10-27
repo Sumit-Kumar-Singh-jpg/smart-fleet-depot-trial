@@ -1,0 +1,21 @@
+{
+  "repository": "https://github.com/NIKHILNIDAGUNDI/SFR-os-1",
+  "commit": "07aa7c398dcb38484cbcd9ee21c98aa72ff91e1e",
+  "pages": [
+    "index.html",
+    "entry_recorder.html",
+    "cleaner.html",
+    "charging.html",
+    "scheduler.html",
+    "admin.html"
+  ],
+  "adaptations": "Online authentication, persistent operations, language support and one shared Android login. Manager is retained from the connected app.",
+  "originalStyleSha256": {
+    "index.html": "7afd5a91b36ab38ab4135b667ae02ae951951129fda63317ed2c512df8c23d8a",
+    "entry_recorder.html": "7830d8aaf95661d5ebc4da55302757c0888bd250afeea29b4ec9ff293e3b171c",
+    "cleaner.html": "73f09987bcf2a9d44903fc8d18737fc57495ba3dee1150c8c5f8835fb7b1754a",
+    "charging.html": "7830d8aaf95661d5ebc4da55302757c0888bd250afeea29b4ec9ff293e3b171c",
+    "scheduler.html": "db5035a6d311f7d73a3ea5e7acb07d01225d66a5803dfc94b9abde0a21ae2e2b",
+    "admin.html": "0e2e0a85c8185372603f85768516d912830616c1f23db7233cb1b11da0f65e88"
+  }
+}

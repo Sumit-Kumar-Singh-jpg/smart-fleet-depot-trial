@@ -224,7 +224,7 @@
                 ? multi.buses.find(bus => bus.id === busId || bus.busId === busId ||
                     (bus.reg && data[busId]?.regNo && bus.reg.toLowerCase() === data[busId].regNo.toLowerCase()))
                 : null;
-            if (!data[busId] && centralBus && depotId !== 'chandapura') {
+            if (!data[busId] && centralBus) {
                 data[busId] = {
                     busId, regNo: centralBus.reg || centralBus.regNo || 'N/A', cat: centralBus.cat || 'B',
                     actualRange: Number(centralBus.actualRange || 90), driver: centralBus.driver || null,

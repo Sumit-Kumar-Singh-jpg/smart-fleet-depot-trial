@@ -68,8 +68,8 @@ th{color:var(--mut);font-size:12px;text-transform:uppercase;letter-spacing:.04em
 code{background:var(--bg);padding:2px 6px;border-radius:6px}
 #toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--slate);color:#fff;padding:10px 18px;border-radius:10px;opacity:0;transition:.25s;pointer-events:none;z-index:9;max-width:90vw;text-align:center}
 #toast.on{opacity:1}
-.registry-filters{display:grid;grid-template-columns:minmax(220px,2fr) repeat(3,minmax(130px,1fr));gap:9px;margin:12px 0}.registry-filters input,.registry-filters select{padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink);min-width:0}.tag.cat-a{background:var(--p1);color:var(--blue)}.tag.cat-b{background:var(--p2);color:#388E3C}.tag.cat-c{background:var(--p4);color:var(--warn)}.metric-note{font-size:11px;color:var(--mut)}@media(max-width:900px){.registry-filters{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:520px){.registry-filters{grid-template-columns:1fr}}</style></head>
-<body><div class="wrap" id="app"></div><div id="scannerLayer"></div><div id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+.registry-filters{display:grid;grid-template-columns:minmax(220px,2fr) repeat(3,minmax(130px,1fr));gap:9px;margin:12px 0}.registry-filters input,.registry-filters select{padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink);min-width:0}.tag.cat-a{background:var(--p1);color:var(--blue)}.tag.cat-b{background:var(--p2);color:#388E3C}.tag.cat-c{background:var(--p4);color:var(--warn)}.metric-note{font-size:11px;color:var(--mut)}@media(max-width:900px){.registry-filters{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:520px){.registry-filters{grid-template-columns:1fr}}</style><script defer src="src/js/i18n.js"></script><script defer src="src/js/remote.js"></script><script defer src="src/js/admin-cloud.js"></script></head>
+<body data-ui="legacy"><div class="wrap" id="app"></div><div id="scannerLayer"></div><div id="toast"></div>
 <script>
 const CITIES=[["Bengaluru",12.97,77.59,"KA"],["Chennai",13.08,80.27,"TN"],["Hyderabad",17.38,78.48,"TS"],["Mumbai",19.08,72.88,"MH"],["Pune",18.52,73.86,"MH"],["Delhi",28.61,77.21,"DL"],["Kolkata",22.57,88.36,"WB"],["Kochi",9.93,76.27,"KL"],["Ahmedabad",23.02,72.57,"GJ"],["Jaipur",26.91,75.79,"RJ"],["Other (enter lat / lon)",0,0,"XX"]];
 const ROLES=[["entry","Entry Recorder"],["clean","Cleaner"],["charge","Charging Incharge"],["sched","Scheduler"],["mgr","Depot Manager"]];
@@ -77,9 +77,9 @@ const OUTLINE=[[74.5,37],[77,35.5],[79,34],[78.5,31],[81,30],[80,28.5],[84,27.5]
 const KEY="sfos_multi_v2";
 let S,auth={role:"admin"},scanStream=null,scanWorker=null,ocrPromise=null,ui={tab:"net",depot:"",q:"",f:"pending",xf:"",selectedBus:"",registryQ:"",registryCat:"all",registryDepot:"all",registryStatus:"all"};
 const $=id=>document.getElementById(id);
-const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const cid=s=>String(s).replace(/[^A-Za-z0-9_-]/g,"");
-const rpw=()=>{const c="abcdefghjkmnpqrstuvwxyz23456789";let o="";for(let i=0;i<8;i++)o+=c[Math.floor(Math.random()*c.length)];return o};
+const rpw=()=>Array.from(crypto.getRandomValues(new Uint8Array(12)),v=>v.toString(16).padStart(2,'0')).join('');
 const lines=t=>[...new Set(String(t).split(/\n/).map(x=>x.trim()).filter(Boolean))];
 const busLines=t=>String(t).split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
 const dep=id=>S.depots.find(d=>d.id===id);
@@ -126,7 +126,7 @@ function seed(){
   [["Chandapura Depot 44","Bengaluru",12.8,77.7,"BM",221,"KA",122,[34,14,9,3],"SCH-"],["Tondiarpet Depot","Chennai",13.12,80.29,"TN",100,"TN",40,[15,8,6,2],"CHN-"],["Miyapur Depot","Hyderabad",17.5,78.36,"TS",300,"TS",50,[20,10,8,2],"HYD-"]].forEach(x=>{
     const d=mkDepot({name:x[0],city:x[1],lat:x[2],lon:x[3],routes:r(x[9],10),drivers:dr.slice()},()=>"demo1234");
     S.depots.push(d);const bs=mkBuses(d,x[4],x[5],x[6],x[7]);flow(d,bs,...x[8]);S.buses.push(...bs)});
-  
+
   const allDepotIds=S.depots.map(d=>d.id);
   // Shared Bus Example 1: KA-25-1234 shared across Chandapura, Tondiarpet, and Miyapur (awaiting entry)
   S.buses.unshift({
@@ -147,6 +147,7 @@ function seed(){
   logm("Demo network loaded: 3 depots, "+S.buses.length+" physical buses (including cross-depot shared fleet)");
 }
 function load(){
+  if(window.FleetRemote?.enabled){S=JSON.parse(localStorage.getItem(KEY));window.hydrateAdminUsers?.();return;}
   try{
     const r=localStorage.getItem(KEY);
     if(r){
@@ -201,10 +202,7 @@ function act(id,type){
   load();
   const b=S.buses.find(x=>x.id===id);if(!b)return toast("Bus "+id+" not found");
   const d=curD();
-  if(['entry','clean','charge','assign'].includes(type)){
-    try{if(JSON.parse(localStorage.getItem('smart_fleet_issues')||'[]').some(i=>i.busId===id&&!i.resolvedAt))return toast('Bus has a reported problem. Ask the depot manager to resolve it first.');}
-    catch(e){return toast('Could not check reported problems. Refresh before approving.');}
-  }
+
   if(auth.role!=="admin"){
     if(type==="entry"){
       const linked=b.linkedDepots&&b.linkedDepots.length?b.linkedDepots:[b.home||b.loc].filter(Boolean);
@@ -266,7 +264,7 @@ function tx(id,to){
   const b=S.buses.find(x=>x.id===id);if(!b||!to||!dep(to))return toast("Choose a destination depot");
   if(auth.role!=="admin"&&b.loc!==auth.depot)return toast("You can only transfer buses from your depot");
   const from=b.loc;if(from===to)return toast("Bus is already at that depot");
-  
+
   b.loc=null; // Departs current depot
   b.entry=b.clean=b.charge=false;
   b.route=b.driver="";
@@ -288,7 +286,7 @@ function addDepot(){
   const city=$("f_city").value.trim()||name,lat=0,lon=0;
   const d=mkDepot({name,city,lat,lon,routes:lines($("f_sched").value),drivers:lines($("f_drv").value)},rpw);
   const parsed=parseBusRows($("f_buses").value,n,d.id);if(parsed.error)return toast(parsed.error);
-  
+
   S.depots.push(d);
   if(parsed.busesToAdd&&parsed.busesToAdd.length)S.buses.push(...parsed.busesToAdd);
   if(parsed.busesToLink&&parsed.busesToLink.length){
@@ -298,7 +296,7 @@ function addDepot(){
     });
   }
   logm("New depot added: "+d.name+" ("+d.city+") with "+n+" buses ("+parsed.busesToAdd.length+" new, "+parsed.busesToLink.length+" shared), "+d.routes.length+" schedules, "+d.drivers.length+" drivers",d.id);
-  save();ui={tab:"logins",depot:d.id,q:"",f:"pending"};render();toast("Depot added – 5 role logins generated");
+  save();Object.assign(ui,{tab:"logins",depot:d.id,q:"",f:"pending"});render();toast("Depot added – 5 role logins generated");
 }
 function parseBusRows(text,expected,targetDepotId){
   const rows=busLines(text);
@@ -311,15 +309,15 @@ function parseBusRows(text,expected,targetDepotId){
     const code=parts[0].trim(),reg=parts[1].trim(),safeCode=cid(code),safeReg=esc(reg);
     if(!code||safeCode!==code||!reg)return {error:"Bus line "+(i+1)+" needs a valid bus code and registration."};
     const codeLower=code.toLowerCase(),regLower=reg.toLowerCase();
-    
+
     if(seenInBatch.has(codeLower)||seenInBatch.has(regLower)){
       return {error:"Duplicate vehicle entry in current batch: "+code+" ("+reg+")"};
     }
     seenInBatch.add(codeLower);seenInBatch.add(regLower);
-    
+
     const existingByCode=S.buses.find(b=>b.id.toLowerCase()===codeLower);
     const existingByReg=S.buses.find(b=>b.reg.toLowerCase()===regLower);
-    
+
     // Exact match: reuse existing physical vehicle identity across depots!
     if(existingByCode&&existingByReg&&existingByCode.id===existingByReg.id){
       const linked=existingByCode.linkedDepots||[existingByCode.home||existingByCode.loc].filter(Boolean);
@@ -329,7 +327,7 @@ function parseBusRows(text,expected,targetDepotId){
       busesToLink.push({bus:existingByCode,depotId:targetId});
       continue;
     }
-    
+
     // Conflict detection:
     if(existingByCode&&(!existingByReg||existingByCode.id!==existingByReg.id)){
       return {error:"Identity Conflict: Bus code "+code+" is already registered with registration "+existingByCode.reg+". Cannot assign to "+reg+"."};
@@ -337,7 +335,7 @@ function parseBusRows(text,expected,targetDepotId){
     if(existingByReg&&(!existingByCode||existingByCode.id!==existingByReg.id)){
       return {error:"Duplicate Registration Prevented: Registration "+reg+" is already registered under bus code "+existingByReg.id+"."};
     }
-    
+
     // New physical bus
     busesToAdd.push({
       id:code,reg:safeReg,entry:false,clean:false,charge:false,route:"",driver:"",
@@ -539,10 +537,10 @@ function busTable(d){
   return `<div class="tw"><table><thead><tr><th>Bus code</th><th>Registration</th><th>Status / Location</th><th>Stage</th><th>Route / driver</th></tr></thead><tbody>${r.map(b=>{
     const s=SN[stage(b)];
     const locStatus=b.entry?tag("Present at "+esc(dn(b.loc)),"ok"):(b.transferTo===d?tag("Awaiting Arrival","w"):tag("Available for Entry","b"));
-    return `<tr><td><b>${b.id}</b>${homeTag(b)}</td><td>${b.reg}</td><td>${locStatus}</td><td>${tag(s[0],s[1])}</td><td>${b.route?esc(b.route)+" / "+esc(b.driver):"—"}</td></tr>`
+    return `<tr><td><b>${esc(b.id)}</b>${homeTag(b)}</td><td>${esc(b.reg)}</td><td>${locStatus}</td><td>${tag(s[0],s[1])}</td><td>${b.route?esc(b.route)+" / "+esc(b.driver):"—"}</td></tr>`
   }).join("")}</tbody></table></div>${r.length?"":'<div class="empty">No buses match.</div>'}<p class="sub l" style="margin-top:10px">${r.length} bus(es)</p>`;
 }
-function logList(d,n){const l=S.log.filter(x=>!d||x.d.includes(d)).slice(0,n);return `<ul class="log">${l.map(x=>`<li>${x.t} — ${esc(x.m)}</li>`).join("")||"<li>No activity yet.</li>"}</ul>`}
+function logList(d,n){const l=S.log.filter(x=>!d||x.d.includes(d)).slice(0,n);return `<ul class="log">${l.map(x=>`<li>${esc(x.t)} — ${esc(x.m)}</li>`).join("")||"<li>No activity yet.</li>"}</ul>`}
 function openDepot(id){ui.depot=id;go("ov")}
 function net(){
   const ready=S.depots.reduce((n,d)=>n+stats(d.id).ready,0),inTransit=S.buses.filter(b=>b.transferStatus==="in_transit").length,maintenance=S.buses.filter(b=>b.maintenance).length,capacity=S.depots.reduce((n,d)=>n+S.buses.filter(b=>b.home===d.id).length,0);
@@ -559,7 +557,7 @@ function locHtml(){
     const s=SN[stage(b)];
     const linked=(b.linkedDepots||[b.home||b.loc].filter(Boolean)).map(x=>dn(x)).join(", ");
     let locInfo=b.entry?`Present at ${esc(dn(b.loc))}`:(b.transferTo?`In Transit (${esc(dn(b.transferFrom))} → ${esc(dn(b.transferTo))})`:`Available for Entry across (${linked})`);
-    return `<tr><td><b>${b.id}</b>${homeTag(b)}</td><td>${b.reg}</td><td>${esc(linked)}</td><td>${esc(locInfo)}</td><td>${tag(s[0],s[1])}</td><td>${b.route?esc(b.route)+" / "+esc(b.driver):"—"}</td></tr>`
+    return `<tr><td><b>${esc(b.id)}</b>${homeTag(b)}</td><td>${esc(b.reg)}</td><td>${esc(linked)}</td><td>${esc(locInfo)}</td><td>${tag(s[0],s[1])}</td><td>${b.route?esc(b.route)+" / "+esc(b.driver):"—"}</td></tr>`
   }).join("")}</tbody></table></div>`;
 }
 function locRes(){$("locres").innerHTML=locHtml()}
@@ -580,7 +578,7 @@ function addView(){
 function loginsView(){
   const d=dep(curD());
   return `<div class="card"><h2>Logins · ${esc(d.name)}</h2><p class="sub l">Each depot gets five separate logins: Entry Recorder, Cleaner, Charging Incharge, Scheduler and Depot Manager. The Depot Manager can manage this depot only.</p>
-  <div class="tw"><table><thead><tr><th>Role</th><th>User ID</th><th>Password</th><th></th></tr></thead><tbody>${ROLES.map(r=>`<tr><td>${r[1]}</td><td><code>${d.users[r[0]].u}</code></td><td><code>${d.users[r[0]].p}</code></td><td><button class="btn sm s" onclick="regen('${r[0]}')">Regenerate</button></td></tr>`).join("")}</tbody></table></div>
+  <div class="tw"><table><thead><tr><th>Role</th><th>User ID</th><th>Password</th><th></th></tr></thead><tbody>${ROLES.map(r=>`<tr><td>${r[1]}</td><td><code>${esc(d.users[r[0]].u)}</code></td><td><code>${esc(d.users[r[0]].p)}</code></td><td><button class="btn sm s" onclick="regen('${r[0]}')">Regenerate</button></td></tr>`).join("")}</tbody></table></div>
   </div>`;
 }
 function linkBusAction(){
@@ -611,7 +609,7 @@ function unlinkBus(id,depotId){
 function manage(){
   const d=dep(curD()),others=S.depots.filter(x=>x.id!==d.id);
   const chips=(l,k)=>`<div class="chips">${l.map((x,i)=>`<span class="chip">${esc(x)}<a onclick="remRes('${k}',${i})" title="Remove">×</a></span>`).join("")||'<span class="hint">None yet</span>'}</div>`;
-  
+
   // Shared fleet options
   const unlinkedFleet=S.buses.filter(b=>!(b.linkedDepots||[b.home||b.loc]).includes(d.id));
   const linkedShared=S.buses.filter(b=>(b.linkedDepots||[b.home||b.loc]).includes(d.id)&&(b.linkedDepots||[]).length>1);
@@ -620,7 +618,7 @@ function manage(){
   <div class="g2"><div><label>Number of buses</label><input id="m_count" type="number" min="1" max="500" step="1" oninput="cnt('m')" placeholder="e.g., 5"><label>Paste exact buses <span class="hint">BUS CODE, REGISTRATION per line</span></label><textarea id="m_b" oninput="cnt('m')"></textarea><p class="hint" id="m_cnt">0 of 0 buses entered</p><button class="btn sm" onclick="addRes('b')">Add buses</button></div>
   <div><label>Add schedule codes</label><textarea id="m_s"></textarea><button class="btn sm" onclick="addRes('s')">Add schedules</button>${chips(d.routes,"s")}</div>
   <div><label>Add drivers</label><textarea id="m_d"></textarea><button class="btn sm" onclick="addRes('d')">Add drivers</button>${chips(d.drivers,"d")}</div></div></div>
-  
+
   <div class="card f"><h3>Cross-Depot Bus Sharing &amp; Authorization</h3>
   <p class="sub l">Authorize an existing physical bus from the central fleet to operate into <b>${esc(d.name)}</b>. The central bus identity is preserved across all depots without duplicating records.</p>
   <div class="g2">
@@ -678,5 +676,5 @@ window.addEventListener("storage", e => {
     render();
   }
 });
-if(localStorage.getItem("fleet_theme")==="dark")document.documentElement.dataset.theme="dark";load();render();
+if(localStorage.getItem("fleet_theme")==="dark")document.documentElement.dataset.theme="dark";window.addEventListener("DOMContentLoaded",()=>{if(!window.FleetRemote?.enabled){load();render();}});
 </script></body></html>

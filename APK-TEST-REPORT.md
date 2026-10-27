@@ -1,30 +1,19 @@
-# Android pilot validation — 27 October 2026
+# Smart Fleet OS 1.2.0 validation
 
-- Six Android APK variants built successfully; all six APK signatures verified with Android apksigner.
-- Android 11 emulator with WebView 83: Entry, Cleaning, Charging, Scheduler, Manager and Admin each passed actual APK installation, role sign-in, shared-server connection, Kannada display and viewport checks. Hindi switching was also checked in Entry.
-- 74 existing cross-depot and assignment checks passed.
-- 31 local role-screen browser checks passed.
-- 20 shared-server checks passed, including authentication, role checks, concurrency, idempotence, problem holds and logout revocation.
-- 21 connected-app browser checks passed, including three-language switching, separate device sessions, a real assignment, explicit bus return and rejecting offline writes.
+One Android APK supports Entry, Cleaning, Charging, Scheduler, Depot Manager and Admin through the same sign-in screen. The application ID is in.smartfleet.depot, version code 4. It is a debug-signed trial build.
 
-The cross-depot assignment fixture now explicitly records cleaning and charging approval. The readiness check was corrected so a central fleet record cannot enter the ready pool before both approvals.
+UI source: https://github.com/NIKHILNIDAGUNDI/SFR-os-1, commit 07aa7c398dcb38484cbcd9ee21c98aa72ff91e1e. Original forms, colours, dropdowns and Admin dashboard navigation are retained, with an extra phone header rule to fit the language and server controls. UI-SOURCE.json records the source. Manager is retained from the connected app.
 
-These are debug-signed pilot APKs, not production releases. Physical camera/OCR accuracy, installed language voices, worker usability, native-language terminology and real fleet-data migration need field verification. The native Admin screen covers staff accounts; the full original depot/fleet editor remains a local desktop interface. No public server or store release has been deployed.
+## Completed checks
 
-## Version 1.1 — Render/Neon preparation
+- 19 UI integration checks, including all six role logins and logouts in the same unrestricted app session.
+- 19 original Admin dashboard checks with SQLite, and another 19 with embedded PostgreSQL: shared registration and depot creation, authenticated generated accounts, stale-edit rejection, authorization, password reset/session revocation, transfer queue cleanup and destination entry.
+- 20 shared-server API checks.
+- 20 PostgreSQL checks, including concurrency, idempotence and restart persistence.
+- 7 cold-start and compact-polling checks.
+- 74 fleet synchronization and assignment checks.
+- Actual SmartFleet.apk installed on a separate Android 11 emulator (emulator-5580). All six role sign-ins, live server connectivity, Kannada and phone-width checks passed. Hindi switching passed on Entry. An additional native Entry check verified phone header spacing.
 
-Six refreshed APKs build successfully with server warm-up and 15-second revision-aware polling. The prior native wrapper checks remain applicable; the new cold-start flow has 7 dedicated browser checks. 20 PostgreSQL checks execute on an embedded real PostgreSQL engine and verify restart persistence and concurrent/idempotent commits. The 20 SQLite API checks, 74 fleet-rule checks and 21 connected browser checks pass after the storage adaptation. The Blueprint validates against Render's current JSON Schema; Render CLI validation and live Neon/Render end-to-end verification have not been performed. Neon must be connected before the persistent trial can be provisioned.
+The online password reset from the previous request is preserved. Trial data and accounts remain on the existing Neon database. Admin configuration commits check the current state revision and cannot overwrite a newer worker approval. Passwords and hashes are excluded from snapshots and distributable archives.
 
-## Online trial verification
-
-The live Render HTTPS service passed 19 API checks, including all six role logins and a complete sample bus cycle with a manager-reviewed problem hold. The returned bus is available for the next trial cycle. APKs are rebuilt with the public trial URL preconfigured. Render and Neon are both on their Free plans; quotas and cold starts still apply.
-
-The second Render deploy (`dep-dbgb7m0m7kps73buk1tg`) reached live with database revision 7 preserved and all six account logins passing again. Six bundled-client browser checks also passed from the Android app origin against the live service, covering CORS, Kannada and viewport fit. These browser checks do not replace physical Android camera and voice testing.
-
-## Version 1.1.1 � original UI restored
-
-Restored the original login console, worker forms, bus dropdowns, colours and scheduler presentation from the pre-improvement backup. Cloud authentication, persistent records, Kannada/Hindi/English support and safe assignment/logout behaviour remain. Manager and connected admin functionality remain available in matching original colours.
-
-The restored UI passed 17 local integration checks, 7 startup/polling checks and 20 shared-server checks. All six Android variants rebuilt successfully. Earlier card-layout checks above describe older versions; they are superseded by the restored UI checks. These UI changes have browser validation; the rebuilt APKs still need a physical-device usability check.
-
-The original UI is live at the existing trial URL (deploy `dep-dbgbk00m7kps73bvi410`). Its console and bus dropdown were verified in a real browser. Ten read-only live API checks passed after deployment; all six accounts and database revision 7 remain available. All six rebuilt APK signatures passed verification.
+Physical camera/OCR accuracy, installed language voices and worker usability need field checks on depot phones.

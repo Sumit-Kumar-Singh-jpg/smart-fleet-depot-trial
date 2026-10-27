@@ -1,40 +1,24 @@
-# Smart Fleet online trial
+# Smart Fleet OS — one Android app
 
-**Server:** https://smart-fleet-depot-trial.onrender.com
+Install **SmartFleet.apk** on every trial phone (Android 8.0 or later). This single app supports Entry, Cleaning, Charging, Scheduler, Depot Manager and Admin. The username determines the work screen; there is no separate APK or role selection.
 
-The server is live on Render Free, with persistent PostgreSQL data on Neon Free. The same trial records and accounts survived a verified Render redeployment.
+Server: https://smart-fleet-depot-trial.onrender.com
 
-## Start using the apps
+1. Install SmartFleet.apk, either directly or from SmartFleet-Android-Pilot.zip.
+2. Choose English, Kannada or Hindi in the header.
+3. Sign in with your own account. Usernames are admin, chandapura-entry, chandapura-cleaner, chandapura-charging, chandapura-scheduler and chandapura-manager. The owner keeps the current passwords in server/data/cloud-trial-access.json.
+4. Sign out to let another user sign in on the same app. The server enforces each account's role and depot.
 
-1. Extract `SmartFleet-Android-Pilot.zip` and install the APK for the person's work role.
-2. New installations use the online trial address automatically. If an older installation has a saved local server address, tap the gear and enter the HTTPS address above.
-3. Choose English, Kannada or Hindi.
-4. Sign in using the corresponding account from the private local file `server/data/cloud-trial-access.json` on the owner's computer. This file contains passwords and must not be uploaded or forwarded as part of the APK bundle.
+The online server is preconfigured. Use **Server settings** only to change it. Earlier role-specific apps use different Android package IDs; the new app is named **Smart Fleet OS** and installs separately.
 
-| APK | Role |
-| --- | --- |
-| `app-entry-debug.apk` | Bus entry |
-| `app-cleaner-debug.apk` | Cleaning |
-| `app-charging-debug.apk` | Charging |
-| `app-scheduler-debug.apk` | Scheduling and assignment |
-| `app-manager-debug.apk` | Problem review and bus return |
-| `app-admin-debug.apk` | Staff accounts |
+## UI source
 
-The same HTTPS address can be opened in a browser to sign in without installing an APK.
+The login, entry, cleaning, charging, scheduler and Admin presentation follows https://github.com/NIKHILNIDAGUNDI/SFR-os-1 at commit 07aa7c398dcb38484cbcd9ee21c98aa72ff91e1e. Original colours, forms, dropdowns, Admin dashboard and navigation are retained. A small native phone header adjustment fits the language and server controls. The Depot Manager screen is retained from the connected app.
 
-## What was checked
+The original Admin dashboard now reads shared server data. Fleet registration, depot creation, linking, transfers, resources and staff password changes save online. Concurrent edits are checked against the server revision. Existing passwords are masked; a password can be reset, and new depot credentials are shown only in the creating admin session. Use staff consoles for approvals and assignments, and the Manager screen for bus returns.
 
-- All six role accounts authenticate through the live HTTPS server.
-- A sample bus passed entry, a reported problem and manager review, cleaning, charging, route/driver assignment, and explicit return to the depot.
-- The six bundled client screens were tested against the live API from the Android app's origin, including CORS, Kannada and phone layout.
-- Accounts, fleet state and the verification revision persisted across a second Render deployment.
+## Trial hosting
 
-The new online APKs are debug-signed pilot builds. The native Android wrapper was tested in the earlier emulator checks; the latest live checks used the bundled client assets in a browser. Physical-phone camera accuracy, installed language voices and worker usability still need field testing.
+Render Free hosts the API; Neon Free stores accounts and records across server restarts. The service can sleep when unused, so the first sign-in can take about a minute. Apps show a startup message. Free quotas still apply. No keep-alive bot is configured.
 
-## Free-tier behavior
-
-The service can sleep when unused. The first sign-in after inactivity may take about a minute; the apps show a server-starting message and wait before submitting credentials. Free usage quotas still apply and can pause service. No keep-alive bot has been configured.
-
-This is a trial using the bundled sample fleet. Keep real operational data separate until the depot configuration, source-data migration and physical-phone checks have been completed. Automatic Render deployments are disabled; future code changes require a deliberate deployment.
-
-Version 1.1.1 restores the original form and dropdown UI. The existing online server, staff accounts, stored records and three supported languages are retained. Install the refreshed APKs to get this layout on Android.
+This is a debug-signed pilot APK using the sample fleet. The APK was tested on an isolated Android 11 emulator against the live server. Camera accuracy, installed voices and real worker usability still need checks on depot phones.

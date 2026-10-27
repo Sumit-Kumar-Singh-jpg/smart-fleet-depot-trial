@@ -1,0 +1,6 @@
+/* Fit the language and server controls alongside the repository's phone UI. */
+@media(max-width:580px){
+  body[data-native-app] .top>.brand{flex-basis:100%;min-width:0}
+  body[data-native-app] .top>.right{width:100%;flex-wrap:wrap}
+  body[data-native-app] .top>.right .act{max-width:100%}
+}

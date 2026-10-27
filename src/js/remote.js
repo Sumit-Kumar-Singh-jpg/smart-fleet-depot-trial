@@ -36,12 +36,13 @@
     return warming;
   }
   window.FleetRemote={
-    enabled:connected,required,appRole,get ready(){return ready;},
+    enabled:connected,required,appRole,get ready(){return ready;},get revision(){return lastRevision;},
     async login(username,password,role){const button=document.querySelector('#loginForm button.primary');if(button)button.disabled=true;try{await warmup();const result=await request('/api/login',{username,password,role:role||appRole||undefined});token=result.token;sessionStorage.setItem('fleet_token',token);apply(result,true);return {...result.session,u:result.session.u};}finally{if(button)button.disabled=false;}},
     async refresh(){if(!connected||!token||pending)return;pending=true;try{apply(await request('/api/state'+(lastRevision===null?'':'?since='+encodeURIComponent(lastRevision))));status('Connected');}catch(error){ready=false;status('Offline — reconnect before saving',true);}finally{pending=false;}},
     async perform(action,values){if(!connected||!token)throw new Error('Sign in again to continue');pending=true;try{const result=await request('/api/action',{action,...values,requestId:crypto.randomUUID?crypto.randomUUID():Array.from(crypto.getRandomValues(new Uint8Array(16)),b=>b.toString(16).padStart(2,'0')).join('')});apply(result);status('Connected');return result;}catch(error){error.confirmationUnknown=!error.notSaved;status(error.confirmationUnknown?'Save could not be confirmed. Refresh to check recent work.':'Could not save. Refresh before trying again.',true);throw error;}finally{pending=false;}},
     async logout(){if(connected&&token)try{await request('/api/logout',{});}catch(_){}token='';sessionStorage.removeItem('fleet_token');},
     async users(){return request('/api/admin/users');},async saveUser(body){return request('/api/admin/users',body);},
+    async saveNetwork(network,revision){const result=await request('/api/admin/network',{network,revision});apply(result,true);return result;},
     loginURL(){return 'index.html'+(appRole?'?app='+encodeURIComponent(appRole):'');}
   };
   document.addEventListener('DOMContentLoaded',()=>{

@@ -2,6 +2,7 @@
 document.addEventListener('DOMContentLoaded',()=>{
   'use strict';
   if(window.FleetAndroid&&self===top){
+    document.body.setAttribute('data-native-app','');
     const header=document.querySelector('.right,.header-top,.header-actions');
     if(header){const button=document.createElement('button');button.type='button';button.className=header.matches('.right')?'act':'theme-toggle';button.textContent='Server settings';button.onclick=()=>FleetAndroid.configureServer();header.append(button);}
   }

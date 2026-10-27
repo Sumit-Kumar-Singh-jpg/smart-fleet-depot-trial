@@ -17,5 +17,5 @@ if (-not $taskGradle) { throw 'Gradle 8.13 is required. Install it or run this p
 & $taskGradle -p android assembleDebug --console=plain
 if ($LASTEXITCODE -ne 0) { throw 'Android build failed' }
 New-Item -ItemType Directory -Path (Join-Path $taskRoot 'apk') -Force | Out-Null
-Get-ChildItem -LiteralPath (Join-Path $taskRoot 'android\app\build\outputs\apk') -Filter '*.apk' -Recurse | ForEach-Object { Copy-Item -LiteralPath $_.FullName -Destination (Join-Path $taskRoot 'apk') }
-Write-Output 'Six pilot APKs are in the apk folder. They are debug-signed, not Play Store releases.'
+Copy-Item -LiteralPath (Join-Path $taskRoot 'android\app\build\outputs\apk\debug\app-debug.apk') -Destination (Join-Path $taskRoot 'apk\SmartFleet.apk')
+Write-Output 'One app for every role is ready: apk\SmartFleet.apk. This is a debug-signed pilot build.'
