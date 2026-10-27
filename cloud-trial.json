@@ -1,0 +1,25 @@
+{
+  "status": "database-ready-awaiting-render-repository-access",
+  "source": {
+    "repository": "https://github.com/Sumit-Kumar-Singh-jpg/smart-fleet-depot-trial",
+    "branch": "codex/render-neon-trial"
+  },
+  "database": {
+    "provider": "Neon",
+    "plan": "free",
+    "projectId": "hidden-bird-12340871",
+    "branchId": "br-polished-heart-a1p7yrnf",
+    "endpointId": "ep-quiet-dawn-a1k0wg98",
+    "database": "smart_fleet",
+    "region": "aws-ap-southeast-1"
+  },
+  "server": {
+    "provider": "Render",
+    "plan": "free",
+    "workspaceId": "tea-daj7ns8ae00c738ti8s0",
+    "name": "smart-fleet-depot-trial",
+    "serviceId": null,
+    "url": null
+  },
+  "privateAccessFile": "server/data/cloud-trial-access.json"
+}

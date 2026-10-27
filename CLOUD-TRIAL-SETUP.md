@@ -4,7 +4,7 @@ This configuration runs the Node API on Render Free and stores its accounts, ses
 
 ## Required connections
 
-The source must be available to Render through the user's GitHub connection. Install/connect the Neon integration in Codex to provision the database without pasting credentials into chat. The selected Render workspace for this trial is **My Workspace**.
+The source must be available to Render through the user's GitHub connection. Neon is connected. The dedicated trial project and six role accounts are created and verified. Render must be authorized to read the private repository before the API can be deployed. The selected Render workspace for this trial is **My Workspace**.
 
 Use only Free plans for both providers. The Blueprint creates one Free web service; it does not create a paid database or disk.
 
@@ -52,3 +52,9 @@ Embedded PostgreSQL tests do not confirm live Neon connectivity. After deploymen
 ## Local depot mode remains available
 
 Without `DATABASE_URL`, local runs use the existing SQLite database. The cloud guard applies when Render is detected or `FLEET_REQUIRE_POSTGRES=true`. The local launcher and APK role workflows remain available for depot-only trials.
+
+## Current provisioning status
+
+The dedicated Neon Free project is `hidden-bird-12340871`, branch `trial`, database `smart_fleet`, in Singapore. A live TLS-verified PostgreSQL connection, admin login and all five staff-role logins have been verified across a server-process restart. Private access details are stored in the ignored local `server/data/cloud-trial-access.json`; they are not in this repository or the download bundles.
+
+Render service creation was rejected because the private repository was unfetchable. In Render, connect GitHub and grant access to `Sumit-Kumar-Singh-jpg/smart-fleet-depot-trial`; then retry the free service creation. No public trial URL exists yet. Resource identifiers and the pending status are recorded in `cloud-trial.json` without credentials.
