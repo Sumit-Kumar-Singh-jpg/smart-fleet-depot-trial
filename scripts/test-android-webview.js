@@ -2,7 +2,9 @@
 const fs=require('node:fs'),{execFileSync}=require('node:child_process');
 const adb=process.env.ADB_PATH||process.env.LOCALAPPDATA+'\\Android\\Sdk\\platform-tools\\adb.exe';
 const serial=process.env.ANDROID_SERIAL||'emulator-5580',port=9225;
-const roles=process.argv.slice(2).length?process.argv.slice(2):['entry'];
+const live=process.argv.includes('--live');
+const selectedRoles=process.argv.slice(2).filter(arg=>arg!=='--live');
+const roles=selectedRoles.length?selectedRoles:['entry'];
 const command=(...args)=>execFileSync(adb,['-s',serial,...args],{encoding:'utf8'}).trim();
 const pause=ms=>new Promise(r=>setTimeout(r,ms));
 async function connect(role){
@@ -18,7 +20,8 @@ async function connect(role){
 }
 async function wait(client,expression){for(let i=0;i<60;i++){if(await client.evaluate(expression))return;await pause(300);}throw new Error('Android screen did not become ready');}
 (async()=>{
- const accounts=JSON.parse(fs.readFileSync('server/data/initial-access.json','utf8')).accounts;
+ const saved=JSON.parse(fs.readFileSync(live?'server/data/cloud-trial-access.json':'server/data/initial-access.json','utf8'));
+ const accounts=live?[{...saved.admin,role:'admin'},...saved.staff]:saved.accounts;
  for(const role of roles){
   console.log('Checking Android '+role+'…');
   command('install','-r','apk/app-'+role+'-debug.apk');command('shell','am','force-stop','in.smartfleet.depot.'+role);command('shell','am','start','-n','in.smartfleet.depot.'+role+'/in.smartfleet.depot.MainActivity');await pause(800);

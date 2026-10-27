@@ -14,3 +14,7 @@ These are debug-signed pilot APKs, not production releases. Physical camera/OCR 
 ## Version 1.1 — Render/Neon preparation
 
 Six refreshed APKs build successfully with server warm-up and 15-second revision-aware polling. The prior native wrapper checks remain applicable; the new cold-start flow has 7 dedicated browser checks. 20 PostgreSQL checks execute on an embedded real PostgreSQL engine and verify restart persistence and concurrent/idempotent commits. The 20 SQLite API checks, 74 fleet-rule checks and 21 connected browser checks pass after the storage adaptation. The Blueprint validates against Render's current JSON Schema; Render CLI validation and live Neon/Render end-to-end verification have not been performed. Neon must be connected before the persistent trial can be provisioned.
+
+## Online trial verification
+
+The live Render HTTPS service passed 19 API checks, including all six role logins and a complete sample bus cycle with a manager-reviewed problem hold. The returned bus is available for the next trial cycle. APKs are rebuilt with the public trial URL preconfigured. Render and Neon are both on their Free plans; quotas and cold starts still apply.

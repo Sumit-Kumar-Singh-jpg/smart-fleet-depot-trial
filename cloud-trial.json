@@ -1,5 +1,5 @@
 {
-  "status": "database-ready-awaiting-render-repository-access",
+  "status": "live-verifying-redeploy-persistence",
   "source": {
     "repository": "https://github.com/Sumit-Kumar-Singh-jpg/smart-fleet-depot-trial",
     "branch": "codex/render-neon-trial"
@@ -18,8 +18,15 @@
     "plan": "free",
     "workspaceId": "tea-daj7ns8ae00c738ti8s0",
     "name": "smart-fleet-depot-trial",
-    "serviceId": null,
-    "url": null
+    "serviceId": "srv-dbgb5c59el5s73ce9t3g",
+    "url": "https://smart-fleet-depot-trial.onrender.com",
+    "deployId": "dep-dbgb5ct9el5s73ce9v70"
   },
-  "privateAccessFile": "server/data/cloud-trial-access.json"
+  "privateAccessFile": "server/data/cloud-trial-access.json",
+  "verification": {
+    "httpsHealth": true,
+    "roleLogins": 6,
+    "sampleWorkflowChecks": 19,
+    "revisionBeforeRedeploy": 7
+  }
 }
