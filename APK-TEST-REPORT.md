@@ -26,3 +26,5 @@ The second Render deploy (`dep-dbgb7m0m7kps73buk1tg`) reached live with database
 Restored the original login console, worker forms, bus dropdowns, colours and scheduler presentation from the pre-improvement backup. Cloud authentication, persistent records, Kannada/Hindi/English support and safe assignment/logout behaviour remain. Manager and connected admin functionality remain available in matching original colours.
 
 The restored UI passed 17 local integration checks, 7 startup/polling checks and 20 shared-server checks. All six Android variants rebuilt successfully. Earlier card-layout checks above describe older versions; they are superseded by the restored UI checks. These UI changes have browser validation; the rebuilt APKs still need a physical-device usability check.
+
+The original UI is live at the existing trial URL (deploy `dep-dbgbk00m7kps73bvi410`). Its console and bus dropdown were verified in a real browser. Ten read-only live API checks passed after deployment; all six accounts and database revision 7 remain available. All six rebuilt APK signatures passed verification.

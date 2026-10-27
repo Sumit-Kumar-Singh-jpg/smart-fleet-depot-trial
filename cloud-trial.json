@@ -20,8 +20,8 @@
     "name": "smart-fleet-depot-trial",
     "serviceId": "srv-dbgb5c59el5s73ce9t3g",
     "url": "https://smart-fleet-depot-trial.onrender.com",
-    "deployId": "dep-dbgb7m0m7kps73buk1tg",
-    "deployedCommit": "fe4095205fc8292c025f7d8759ea0fa04cdc8a53"
+    "deployId": "dep-dbgbk00m7kps73bvi410",
+    "deployedCommit": "4a675e80473a99fdf42e5d2edb45ec86f5005a55"
   },
   "privateAccessFile": "server/data/cloud-trial-access.json",
   "verification": {
@@ -31,6 +31,9 @@
     "revisionBeforeRedeploy": 7,
     "bundledClientRoles": 6,
     "revisionAfterRedeploy": 7,
-    "persistedAcrossRenderRedeploy": true
+    "persistedAcrossRenderRedeploy": true,
+    "uiVersion": "1.1.1-original-ui",
+    "restoredUiIntegrationChecks": 17,
+    "restoredUiLiveVerified": true
   }
 }
